@@ -10,11 +10,11 @@ Everything you need to run a Charge Point Operator — from protocol to driver a
 
 | Component | What | Port(s) |
 |-----------|------|---------|
-| [**ocpp-core**](https://github.com/your-org/ocpp-core) | OCPP 1.6/2.0.1 CSMS backend | 9100 (WS 1.6), 9201 (WS 2.0.1), 8000 (REST) |
-| [**ocpp-cpo-admin**](https://github.com/your-org/ocpp-cpo-admin) | Network management dashboard | 8080 |
-| [**ocpp-charge-app**](https://github.com/your-org/ocpp-charge-app) | Driver-facing PWA | 8003 |
-| [**ocpp-compliance-tester**](https://github.com/your-org/ocpp-compliance-tester) | Charger certification suite | 8090 |
-| [**ocpp-charger-farm**](https://github.com/your-org/ocpp-charger-farm) | Virtual charger simulator | 8087 |
+| [**ocpp-core**](https://github.com/opencpo/opencpo-core) | OCPP 1.6/2.0.1 CSMS backend | 9100 (WS 1.6), 9201 (WS 2.0.1), 8000 (REST) |
+| [**ocpp-cpo-admin**](https://github.com/opencpo/opencpo-admin) | Network management dashboard | 8080 |
+| [**ocpp-charge-app**](https://github.com/opencpo/opencpo-charge-app) | Driver-facing PWA | 8003 |
+| [**ocpp-compliance-tester**](https://github.com/opencpo/opencpo-tester) | Charger certification suite | 8090 |
+| [**ocpp-charger-farm**](https://github.com/opencpo/opencpo-charger-farm) | Virtual charger simulator | 8087 |
 
 ---
 
@@ -22,8 +22,8 @@ Everything you need to run a Charge Point Operator — from protocol to driver a
 
 ```bash
 # 1. Clone this repo
-git clone https://github.com/your-org/ocpp-platform
-cd ocpp-platform
+git clone https://github.com/opencpo/opencpo
+cd opencpo
 
 # 2. Clone the component repos
 ./setup.sh
@@ -107,19 +107,19 @@ graph TB
 
 ## Components
 
-### [ocpp-core](https://github.com/your-org/ocpp-core)
+### [ocpp-core](https://github.com/opencpo/opencpo-core)
 The heart of the platform. A high-performance CSMS (Central System Management Server) that speaks OCPP 1.6 and 2.0.1 natively. Handles charger connections, session management, remote commands, smart charging profiles, and exposes a full REST API for the other services.
 
-### [ocpp-cpo-admin](https://github.com/your-org/ocpp-cpo-admin)
+### [ocpp-cpo-admin](https://github.com/opencpo/opencpo-admin)
 The operator's command centre. A React dashboard for managing your charging network end-to-end: charger health, live sessions, tariff configuration, RFID token management, PKI certificates, and analytics.
 
-### [ocpp-charge-app](https://github.com/your-org/ocpp-charge-app)
+### [ocpp-charge-app](https://github.com/opencpo/opencpo-charge-app)
 Driver-facing Progressive Web App. Scan a QR code → authorize → charge → pay. No app store. Works on any smartphone. Supports guest sessions, RFID-linked accounts, and real-time session status.
 
-### [ocpp-compliance-tester](https://github.com/your-org/ocpp-compliance-tester)
+### [ocpp-compliance-tester](https://github.com/opencpo/opencpo-tester)
 Automated charger certification. Point it at any charger, run the test suite, get a compliance report. Covers the full OCPP 1.6 and 2.0.1 message specification with configurable test profiles.
 
-### [ocpp-charger-farm](https://github.com/your-org/ocpp-charger-farm)
+### [ocpp-charger-farm](https://github.com/opencpo/opencpo-charger-farm)
 Virtual charger simulator and load tester. Spin up hundreds of simulated chargers, run stress tests, replay real-world session traces, and validate your backend under load before going live.
 
 ---
@@ -138,7 +138,7 @@ Each component has full docs in its `docs/` directory:
 ## Repository Structure
 
 ```
-ocpp-platform/          ← you are here (orchestration only)
+opencpo/          ← you are here (orchestration only)
 ├── docker-compose.yml  ← spin up everything
 ├── setup.sh            ← clone all component repos
 ├── .env.example        ← configuration reference

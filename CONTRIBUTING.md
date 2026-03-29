@@ -8,12 +8,12 @@ Thanks for your interest in contributing! This is an umbrella repo — it contai
 
 | What you want to change | Repo |
 |-------------------------|------|
-| OCPP protocol handling, CSMS logic, REST API | [ocpp-core](https://github.com/your-org/ocpp-core) |
-| Operator dashboard UI, admin features | [ocpp-cpo-admin](https://github.com/your-org/ocpp-cpo-admin) |
-| Driver PWA, QR flow, payment | [ocpp-charge-app](https://github.com/your-org/ocpp-charge-app) |
-| Compliance test cases, certification reports | [ocpp-compliance-tester](https://github.com/your-org/ocpp-compliance-tester) |
-| Charger simulator, stress test scenarios | [ocpp-charger-farm](https://github.com/your-org/ocpp-charger-farm) |
-| `docker-compose.yml`, `setup.sh`, this README | **here** (ocpp-platform) |
+| OCPP protocol handling, CSMS logic, REST API | [ocpp-core](https://github.com/opencpo/opencpo-core) |
+| Operator dashboard UI, admin features | [ocpp-cpo-admin](https://github.com/opencpo/opencpo-admin) |
+| Driver PWA, QR flow, payment | [ocpp-charge-app](https://github.com/opencpo/opencpo-charge-app) |
+| Compliance test cases, certification reports | [ocpp-compliance-tester](https://github.com/opencpo/opencpo-tester) |
+| Charger simulator, stress test scenarios | [ocpp-charger-farm](https://github.com/opencpo/opencpo-charger-farm) |
+| `docker-compose.yml`, `setup.sh`, this README | **here** (opencpo) |
 
 ---
 
@@ -33,7 +33,7 @@ Thanks for your interest in contributing! This is an umbrella repo — it contai
 
 For changes to orchestration (compose, scripts, docs):
 
-1. Fork `ocpp-platform`
+1. Fork `opencpo`
 2. Make your changes
 3. Test that `docker compose up` still works end-to-end
 4. Open a PR with a clear description

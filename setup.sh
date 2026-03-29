@@ -4,15 +4,15 @@
 
 set -euo pipefail
 
-ORG="${ORG:-your-org}"
+ORG="${ORG:-opencpo}"
 BASE_URL="https://github.com/$ORG"
 
 REPOS=(
-  ocpp-core
-  ocpp-cpo-admin
-  ocpp-charge-app
-  ocpp-compliance-tester
-  ocpp-charger-farm
+  opencpo-core
+  opencpo-admin
+  opencpo-charge-app
+  opencpo-charger-farm
+  opencpo-tester
 )
 
 echo "╔══════════════════════════════════════╗"
