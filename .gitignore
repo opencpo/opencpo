@@ -1,0 +1,19 @@
+# Environment
+.env
+
+# Component repos (cloned by setup.sh)
+ocpp-core/
+ocpp-cpo-admin/
+ocpp-charge-app/
+ocpp-compliance-tester/
+ocpp-charger-farm/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
