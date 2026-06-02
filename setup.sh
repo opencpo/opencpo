@@ -14,7 +14,7 @@
 
 set -euo pipefail
 
-VERSION="v0.2.4"
+VERSION="v0.2.5"
 
 # ── Global cleanup on exit ──
 cleanup() {
@@ -695,11 +695,22 @@ echo -e "  ${BOLD}Start the platform:${NC}"
 echo "    $COMPOSE_CMD up -d"
 echo ""
 echo -e "  ${BOLD}Open in your browser:${NC}"
-echo "    Admin Panel:  http://localhost:8080  (create your admin account on first visit)"
+echo "    Admin Panel:  http://localhost:8080  (welcome screen + setup wizard)"
 echo "    Charge App:   http://localhost:8003"
 echo "    Compliance:   http://localhost:8090"
 echo "    Charger Farm: http://localhost:8087"
 echo ""
+
+# ── Tailscale ──
+if command -v tailscale &>/dev/null; then
+  TS_INFO=$(tailscale status --json 2>/dev/null | grep -oP '"TailscaleIPs":\["\K[^"]+' || echo "")
+  if [ -n "$TS_INFO" ]; then
+    echo -e "  ${BOLD}Tailscale:${NC}"
+    echo "    IP: $TS_INFO  (services available on your tailnet after config)"
+    echo ""
+  fi
+fi
+
 echo -e "  ${BOLD}Need help?${NC}"
 echo "    Docs:    https://github.com/opencpo/opencpo"
 echo "    Discord: https://discord.gg/ra9pnygmrt"

@@ -46,7 +46,7 @@ BANNER = (
     + "   \033[38;2;27;94;32m" + "  ╚██████╔╝██║     ███████╗██║ ╚████║╚██████╗██║     ╚██████╔╝" + RESET + "\n"
     + "   \033[38;2;13;60;20m" + "   ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚═╝      ╚═════╝ " + RESET + "\n"
     + DIM + "  Open Source EV Charging Platform · Zero Trust · OCPP 1.6/2.0.1 · ISO 15118 · PKI" + RESET + "\n"
-    + DIM + "  v0.2.4" + RESET + "\n"
+    + DIM + "  v0.2.5" + RESET + "\n"
     + "\n"
 )
 
@@ -417,6 +417,29 @@ def main():
             return
         config = gather_config()
 
+    # ── Tailscale Detection ──
+    section("Tailscale")
+    tailscale_bin = shutil.which("tailscale")
+    if tailscale_bin:
+        try:
+            ts_status = subprocess.run(
+                [tailscale_bin, "status", "--json"],
+                capture_output=True, text=True, timeout=5
+            )
+            if ts_status.returncode == 0:
+                ts_data = json.loads(ts_status.stdout)
+                ts_ip = ts_data.get("TailscaleIPs", ["?"])[0]
+                ts_host = ts_data.get("Hostname", "?")
+                print(f"  {color('✓', GREEN)} Tailscale detected: {ts_ip} ({ts_host})")
+                print(f"  {color('→', CYAN)} Configure tailnet exposure in the web setup wizard")
+            else:
+                print(f"  {color('○', YELLOW)} Tailscale binary found but not authenticated")
+        except Exception:
+            print(f"  {color('○', YELLOW)} Tailscale binary found but status unavailable")
+    else:
+        print(f"  {color('○', DIM)} Tailscale not detected — install via: curl -fsSL https://tailscale.com/install.sh | sh")
+    print()
+
     env_path = write_env(config)
     show_summary(config, env_path)
 
@@ -429,10 +452,10 @@ def main():
         print(color("  ──────────────────────────────────────────────────────", DIM))
         print()
         print("  Next steps:")
-        print(f"    1. Open {color('http://localhost:' + config['admin_port'], CYAN + BOLD)} — CPO Admin")
-        print(f"    2. Add chargers via the dashboard")
-        print(f"    3. Configure your network under Settings")
-        print(f"    4. Download certs for your chargers")
+        print(f"    1. Open {color('http://localhost:' + config['admin_port'], CYAN + BOLD)} — welcome screen + setup wizard")
+        print("    2. Create your admin account via the wizard")
+        print("    3. Configure Tailscale, branding, pricing, and features")
+        print("    4. Add chargers via the dashboard")
         print()
         print("  Docs:  https://github.com/opencpo/opencpo")
         print("  Community:  https://discord.gg/ra9pnygmrt")
