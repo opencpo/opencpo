@@ -446,18 +446,56 @@ for cmd in "${COMPOSE_TRIES[@]}"; do
     sudo systemctl start docker 2>/dev/null || sudo service docker start 2>/dev/null || true
     sleep 2
   fi
-  info "Running $cmd build ..."
-  if $cmd build -q; then
+  info "Building images (this may take a few minutes) ..."
+  # Use --progress=plain to expose pip install errors hidden by -q.
+  # tail preserves the last 20 lines of the build output for context.
+  if $cmd build --progress=plain 2>&1 | tail -20; then
     BUILD_OK=1
     COMPOSE_CMD="$cmd"
     break
   fi
+  # If build failed, show the full error from docker's output
+  echo ""
+  echo "  Build failed. Docker build output above."
   echo ""
 done
 
 if [ "$BUILD_OK" = "1" ]; then
   ok "All images built successfully!"
   echo ""
+
+  # ── Sanity check: verify core imports before starting ──
+  # Catches runtime import errors (missing deps, bad imports) early.
+  info "Running import sanity check ..."
+  SANITY_OK=0
+  if $COMPOSE_CMD run --rm ocpp-core python -c "
+import api.main
+import api.admin_auth
+import api.admin_setup
+print('OK')
+" 2>&1; then
+    SANITY_OK=1
+  fi
+
+  if [ "$SANITY_OK" = "0" ]; then
+    echo ""
+    warn "Import check failed — the core image has a broken dependency chain."
+    warn "This is usually caused by a missing pip dependency or stale build cache."
+    echo ""
+    info "Retrying with --no-cache to force a clean install..."
+    if $COMPOSE_CMD build --no-cache --progress=plain ocpp-core 2>&1 | tail -20; then
+      ok "Rebuild successful"
+      SANITY_OK=1
+    else
+      fail "Build still fails after --no-cache. Check the error above."
+      echo ""
+      warn "Common causes:"
+      warn "  • Missing Python package  →  add to opencpo-core/requirements.txt"
+      warn "  • Syntax error in code    →  fix the file and re-run"
+      echo ""
+      exit 1
+    fi
+  fi
 
   # ── Start services ──
   header "Starting Services"
@@ -525,10 +563,31 @@ if [ "$BUILD_OK" = "1" ]; then
       fi
       if [ "$i" = "15" ]; then
         echo ""
-        warn "Some services not healthy after 90s — check:"
-        warn "  docker compose ps"
-        warn "  docker compose logs <service>"
+        warn "Some services not healthy after 90s."
+        echo ""
         $COMPOSE_CMD ps --format 'table {{.Name}}\t{{.Status}}'
+        echo ""
+        # Show crash logs for any unhealthy service
+        for svc in $($COMPOSE_CMD ps --format '{{.Name}}' 2>/dev/null); do
+          STATUS=$($COMPOSE_CMD ps --format '{{.Status}}' "$svc" 2>/dev/null)
+          case "$STATUS" in
+            *unhealthy*|*exited*)
+              warn "--- $svc logs (last 15 lines) ---"
+              $COMPOSE_CMD logs --tail=15 "$svc" 2>/dev/null || true
+              echo ""
+              ;;
+          esac
+        done
+        warn "Trying to restart unhealthy services..."
+        $COMPOSE_CMD restart 2>/dev/null || true
+        sleep 10
+        $COMPOSE_CMD ps --format 'table {{.Name}}\t{{.Status}}'
+        echo ""
+        warn "If services still fail:"
+        warn "  docker compose logs --tail=50 <service>"
+        warn "  docker compose down && docker compose up -d"
+        warn "  docker compose build --no-cache <service>"
+        warn ""
         break
       fi
       printf '.'
@@ -538,11 +597,24 @@ if [ "$BUILD_OK" = "1" ]; then
   else
     fail "Failed to start services."
     echo ""
-    warn "--- ocpp-core logs (last 20 lines) ---"
-    $COMPOSE_CMD logs --tail=20 ocpp-core 2>/dev/null || true
-    echo ""
     warn "--- all services status ---"
     $COMPOSE_CMD ps --format 'table {{.Name}}\t{{.Status}}' 2>/dev/null || true
+    echo ""
+    # Show crash logs for each unhealthy/exited service
+    for svc in $($COMPOSE_CMD ps --format '{{.Name}}' 2>/dev/null); do
+      STATUS=$($COMPOSE_CMD ps --format '{{.Status}}' "$svc" 2>/dev/null)
+      case "$STATUS" in
+        *unhealthy*|*exited*)
+          warn "--- $svc logs (last 20 lines) ---"
+          $COMPOSE_CMD logs --tail=20 "$svc" 2>/dev/null || true
+          echo ""
+          ;;
+      esac
+    done
+    warn "Quick fixes:"
+    warn "  docker compose down && docker compose up -d"
+    warn "  docker compose build --no-cache <service>"
+    warn "  docker compose logs --tail=50 <service>"
     echo ""
     exit 1
   fi
