@@ -161,6 +161,23 @@ if [ "${AVAILABLE_MB}" -lt "${MIN_SPACE_MB}" ] 2>/dev/null; then
   warn "The Docker build may fail if disk space runs out."
 fi
 
+# ── Pre-flight: RAM + swap ──
+# Docker builds can OOM on low-memory VMs.  Create a 2GB swapfile if the
+# system has less than 6GB RAM and no swap configured.
+RAM_MB=$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo 2>/dev/null || echo "99999")
+if [ "${RAM_MB}" -lt 6000 ] 2>/dev/null; then
+  SWAP_MB=$(awk '/SwapTotal/ {print int($2/1024)}' /proc/meminfo 2>/dev/null || echo "0")
+  if [ "${SWAP_MB}" -lt 1000 ] 2>/dev/null; then
+    warn "Low RAM (${RAM_MB}MB) with no swap — adding 2GB swapfile for builds"
+    if [ "$(id -u)" -eq 0 ]; then
+      fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile >/dev/null && swapon /swapfile
+    else
+      sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile >/dev/null && sudo swapon /swapfile
+    fi
+    ok "Swap added ($(free -h | awk '/Swap:/{print $2}'))"
+  fi
+fi
+
 # ── Dependency Check / Install ──────────────────────────────────────────────
 if [ "$SKIP_DEPS" = "0" ]; then
   header "Dependencies"
@@ -285,6 +302,14 @@ if [ "$SKIP_DEPS" = "0" ]; then
 
       case "$OS" in
         debian)
+          # Wait for any background apt/dpkg processes to finish
+          # (cloud-init packages can still be installing on first boot)
+          for _ in $(seq 1 30); do
+            if ! $SUDO fuser /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock 2>/dev/null; then
+              break
+            fi
+            sleep 2
+          done
           info "Installing: git, python3, python3-venv"
           $SUDO apt-get update -qq && $SUDO apt-get install -y -qq git python3 python3-venv
 
