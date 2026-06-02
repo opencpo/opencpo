@@ -29,30 +29,31 @@ BOLD='\033[1m'
 DIM='\033[2m'
 NC='\033[0m'
 
-info()  { echo -e "${CYAN}  →${NC} $1"; }
-ok()    { echo -e "${GREEN}  ✓${NC} $1"; }
-warn()  { echo -e "${YELLOW}  ⚠${NC} $1"; }
-fail()  { echo -e "${RED}  ✗${NC} $1"; }
+info()  { echo -e "${CYAN}  ->${NC} $1"; }
+ok()    { echo -e "${GREEN}  v${NC} $1"; }
+warn()  { echo -e "${YELLOW}  !${NC} $1"; }
+fail()  { echo -e "${RED}  x${NC} $1"; }
 
+# banner uses printf to avoid echo -e consuming backslashes in the ASCII art
 banner() {
-  echo ""
-  echo -e "${CYAN}╔══════════════════════════════════════════════════════════════════════════╗${NC}"
-  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}               ____                    _____ _____   ____                 ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}              / __ \                  / ____|  __ \ / __ \                ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}             | |  | |_ __   ___ _ __ | |    | |__) | |  | |               ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}             | |  | | '_ \ / _ \ '_ \| |    |  ___/| |  | |               ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}             | |__| | |_) |  __/ | | | |____| |    | |__| |               ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}              \____/| .__/ \___|_| |_|\_____|_|     \____/                ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}                    | |                                                   ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}                    |_|                                                   ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}          ⚡ Open Source EV Charging Platform ⚡                          ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}       Zero Trust · OCPP 1.6/2.0.1 · ISO 15118 · PKI                    ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
-  echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════════════╝${NC}"
-  echo ""
+  printf '\n'
+  printf '%s\n' "${CYAN}╔══════════════════════════════════════════════════════════════════════════╗${NC}"
+  printf '%s\n' "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}               ____                    _____ _____   ____                 ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}              / __ \                  / ____|  __ \ / __ \                ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}             | |  | |_ __   ___ _ __ | |    | |__) | |  | |               ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}             | |  | | '_ \ / _ \ '_ \| |    |  ___/| |  | |               ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}             | |__| | |_) |  __/ | | | |____| |    | |__| |               ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}              \____/| .__/ \___|_| |_|\_____|_|     \____/                ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}                    | |                                                   ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}                    |_|                                                   ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}          Open Source EV Charging Platform                               ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}       Zero Trust . OCPP 1.6/2.0.1 . ISO 15118 . PKI                    ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}╚══════════════════════════════════════════════════════════════════════════╝${NC}"
+  printf '\n'
 }
 
 header() {
@@ -107,7 +108,7 @@ elif command -v wget &>/dev/null; then
   DL_NAME="wget"
   ok "wget available"
 else
-  warn "Neither curl nor wget found — installing curl..."
+  warn "Neither curl nor wget found -- installing curl..."
   case "$OS" in
     debian)
       apt-get update -qq && apt-get install -y -qq curl
@@ -140,7 +141,7 @@ else
 fi
 
 if ! command -v tar &>/dev/null; then
-  warn "tar not found — installing..."
+  warn "tar not found -- installing..."
   case "$OS" in
     debian) apt-get install -y -qq tar ;;
     fedora) dnf install -y tar ;;
@@ -159,7 +160,6 @@ TMPDIR=$(mktemp -d)
 ARCHIVE="${TMPDIR}/opencpo.tar.gz"
 
 info "Downloading from ${TAR_URL} ..."
-# curl: -o saves to file; wget: -qO- pipes to stdout, redirect to file
 if [ "$DL_NAME" = "curl" ]; then
   $DL_CMD "$TAR_URL" -o "$ARCHIVE"
 else
@@ -167,7 +167,7 @@ else
 fi
 
 if [ ! -s "$ARCHIVE" ]; then
-  fail "Download failed — check internet connection"
+  fail "Download failed -- check internet connection"
   exit 1
 fi
 ok "Downloaded (${DL_NAME})"
@@ -179,7 +179,6 @@ EXTRACT_DIR="${TMPDIR}/extract"
 mkdir -p "$EXTRACT_DIR"
 tar -xzf "$ARCHIVE" -C "$EXTRACT_DIR"
 
-# The tarball creates a directory like "opencpo-main"
 SRC_DIR=$(find "$EXTRACT_DIR" -maxdepth 1 -type d | tail -1)
 
 if [ -z "$SRC_DIR" ] || [ ! -d "$SRC_DIR" ]; then
@@ -187,10 +186,9 @@ if [ -z "$SRC_DIR" ] || [ ! -d "$SRC_DIR" ]; then
   exit 1
 fi
 
-# Move to the final location
 TARGET="${INSTALL_DIR}"
 if [ -d "$TARGET" ]; then
-  warn "Directory '$TARGET' already exists — using '${TARGET}-new'"
+  warn "Directory '$TARGET' already exists -- using '${TARGET}-new'"
   TARGET="${INSTALL_DIR}-new"
 fi
 
@@ -203,11 +201,10 @@ header "Starting Setup"
 cd "$TARGET"
 
 if [ ! -f setup.sh ]; then
-  fail "setup.sh not found in $TARGET — download may be corrupted"
+  fail "setup.sh not found in $TARGET -- download may be corrupted"
   exit 1
 fi
 
 chmod +x setup.sh
 
-# Run setup.sh, passing along any args the user gave (--auto, etc.)
 exec bash setup.sh "$@"

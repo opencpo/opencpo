@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# setup.sh — OpenCPO Bootstrap Installer
+# setup.sh — OpenCPO Setup Script
 # Run this ONCE after cloning the repo. It handles:
 #   1. Dependency installation (Python, Docker, Compose, Git)
 #   2. Component repo cloning
@@ -39,30 +39,30 @@ BOLD='\033[1m'
 DIM='\033[2m'
 NC='\033[0m'
 
-info()  { echo -e "${CYAN}  →${NC} $1"; }
-ok()    { echo -e "${GREEN}  ✓${NC} $1"; }
-warn()  { echo -e "${YELLOW}  ⚠${NC} $1"; }
-fail()  { echo -e "${RED}  ✗${NC} $1"; }
+info()  { echo -e "${CYAN}  ->${NC} $1"; }
+ok()    { echo -e "${GREEN}  v${NC} $1"; }
+warn()  { echo -e "${YELLOW}  !${NC} $1"; }
+fail()  { echo -e "${RED}  x${NC} $1"; }
 
 banner() {
-  echo ""
-  echo -e "${CYAN}╔══════════════════════════════════════════════════════════════════════════╗${NC}"
-  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}               ____                    _____ _____   ____                 ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}              / __ \                  / ____|  __ \ / __ \                ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}             | |  | |_ __   ___ _ __ | |    | |__) | |  | |               ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}             | |  | | '_ \ / _ \ '_ \| |    |  ___/| |  | |               ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}             | |__| | |_) |  __/ | | | |____| |    | |__| |               ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}              \____/| .__/ \___|_| |_|\_____|_|     \____/                ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}                    | |                                                   ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}                    |_|                                                   ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}          ⚡ Open Source EV Charging Platform ⚡                          ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}       Zero Trust · OCPP 1.6/2.0.1 · ISO 15118 · PKI                    ${CYAN}║${NC}"
-  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
-  echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════════════╝${NC}"
-  echo ""
+  printf '\n'
+  printf '%s\n' "${CYAN}╔══════════════════════════════════════════════════════════════════════════╗${NC}"
+  printf '%s\n' "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}               ____                    _____ _____   ____                 ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}              / __ \                  / ____|  __ \ / __ \                ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}             | |  | |_ __   ___ _ __ | |    | |__) | |  | |               ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}             | |  | | '_ \ / _ \ '_ \| |    |  ___/| |  | |               ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}             | |__| | |_) |  __/ | | | |____| |    | |__| |               ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}              \____/| .__/ \___|_| |_|\_____|_|     \____/                ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}                    | |                                                   ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}                    |_|                                                   ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}          Open Source EV Charging Platform                               ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}       Zero Trust . OCPP 1.6/2.0.1 . ISO 15118 . PKI                    ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  printf '%s\n' "${CYAN}╚══════════════════════════════════════════════════════════════════════════╝${NC}"
+  printf '\n'
 }
 
 header() {
@@ -115,7 +115,7 @@ if [ -f /etc/os-release ]; then
       ok "Detected: Alpine Linux"
       ;;
     *)
-      warn "Unknown distro: $ID — will check tools individually"
+      warn "Unknown distro: $ID -- will check tools individually"
       ;;
   esac
 elif [ "$(uname)" = "Darwin" ]; then
@@ -242,7 +242,6 @@ if [ "$SKIP_DEPS" = "0" ]; then
           info "Installing: git, python3, python3-venv"
           $SUDO apt-get update -qq && $SUDO apt-get install -y -qq git python3 python3-venv
 
-          # Docker via official script (handles repo setup, compose plugin, all deps)
           if ! command -v docker &>/dev/null; then
             info "Installing Docker via official script..."
             if command -v curl &>/dev/null; then
@@ -254,7 +253,7 @@ if [ "$SKIP_DEPS" = "0" ]; then
               curl -fsSL https://get.docker.com | $SUDO sh
             fi
           elif ! docker compose version &>/dev/null 2>&1 && ! command -v docker-compose &>/dev/null; then
-            info "Docker found but Compose missing — installing compose plugin..."
+            info "Docker found but Compose missing -- installing compose plugin..."
             if command -v curl &>/dev/null; then
               curl -fsSL https://get.docker.com | $SUDO sh
             elif command -v wget &>/dev/null; then
@@ -291,7 +290,6 @@ if [ "$SKIP_DEPS" = "0" ]; then
           ;;
       esac
 
-      # Re-check
       ALL_OK=1
       command -v git &>/dev/null || ALL_OK=0
       command -v python3 &>/dev/null || ALL_OK=0
@@ -312,7 +310,6 @@ if [ "$SKIP_DEPS" = "0" ]; then
     fi
   fi
 
-  # Detect compose command (maybe just installed)
   if command -v docker-compose &>/dev/null; then
     COMPOSE_CMD="docker-compose"
   elif docker compose version &>/dev/null 2>&1; then
@@ -335,7 +332,7 @@ COMPONENTS=(
 
 for repo in "${COMPONENTS[@]}"; do
   if [ -d "$repo/.git" ]; then
-    ok "$repo already exists — pulling latest"
+    ok "$repo already exists -- pulling latest"
     git -C "$repo" pull --ff-only 2>/dev/null || true
   else
     info "Cloning $repo ..."

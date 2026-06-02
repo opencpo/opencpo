@@ -50,7 +50,7 @@ BANNER = (
     + "   \u2551                    | |                                       \u2551\n"
     + "   \u2551                    |_|                                       \u2551\n"
     + "   \u2551                                                             \u2551\n"
-    + "   \u2551          \u26a1 Open Source EV Charging Platform \u26a1              \u2551\n"
+    + "   \u2551            Open Source EV Charging Platform                \u2551\n"
     + "   \u2551                                                             \u2551\n"
     + "   \u2551       Zero Trust \u00b7 OCPP 1.6/2.0.1 \u00b7 ISO 15118 \u00b7 PKI       \u2551\n"
     + "   \u2551                                                             \u2551\n"
