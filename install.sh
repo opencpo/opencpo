@@ -32,21 +32,21 @@ if [ -n "${NO_COLOR:-}" ] || [ ! -t 1 ]; then
   RED='' GREEN='' YELLOW='' CYAN='' BOLD='' DIM='' NC=''
   G1='' G2='' G3='' G4='' G5='' G6=''
 else
-  # printf -v stores actual ESC bytes, not literal \\033
-  printf -v RED   '\\033[0;31m'
-  printf -v GREEN '\\033[0;32m'
-  printf -v YELLOW '\\033[1;33m'
-  printf -v CYAN  '\\033[0;36m'
-  printf -v BOLD  '\\033[1m'
-  printf -v DIM   '\\033[2m'
-  printf -v NC    '\\033[0m'
+  # printf -v stores actual ESC bytes, not literal \033
+  printf -v RED   "\033[0;31m"
+  printf -v GREEN "\033[0;32m"
+  printf -v YELLOW "\033[1;33m"
+  printf -v CYAN  "\033[0;36m"
+  printf -v BOLD  "\033[1m"
+  printf -v DIM   "\033[2m"
+  printf -v NC    "\033[0m"
   # Gradient: bright cyan → teal → green (used in banner)
-  printf -v G1 '\\033[38;2;0;229;255m'   # #00E5FF
-  printf -v G2 '\\033[38;2;0;184;212m'   # #00B8D4
-  printf -v G3 '\\033[38;2;0;150;136m'   # #009688
-  printf -v G4 '\\033[38;2;56;142;60m'   # #388E3C
-  printf -v G5 '\\033[38;2;27;94;32m'    # #1B5E20
-  printf -v G6 '\\033[38;2;13;60;20m'    # #0D3C14
+  printf -v G1 "\033[38;2;0;229;255m"   # #00E5FF
+  printf -v G2 "\033[38;2;0;184;212m"   # #00B8D4
+  printf -v G3 "\033[38;2;0;150;136m"   # #009688
+  printf -v G4 "\033[38;2;56;142;60m"   # #388E3C
+  printf -v G5 "\033[38;2;27;94;32m"    # #1B5E20
+  printf -v G6 "\033[38;2;13;60;20m"    # #0D3C14
 fi
 
 info()  { echo -e "${CYAN}  ->${NC} $1"; }
