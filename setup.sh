@@ -14,7 +14,7 @@
 
 set -euo pipefail
 
-VERSION="v0.6.1"
+VERSION="v0.6.2"
 
 # ── Global cleanup on exit ──
 cleanup() {
