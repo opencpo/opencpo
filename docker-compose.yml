@@ -93,6 +93,7 @@ services:
     environment:
       OCPP_CORE_API: http://ocpp-core:8000
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost}
+      SKIN: ${SKIN:-default}
 
   # ── Compliance Tester ─────────────────────────────────────────────────────
 
