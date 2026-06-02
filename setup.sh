@@ -30,14 +30,19 @@ for arg in "$@"; do
   esac
 done
 
-# ── Colors (printf -v stores actual ESC bytes, not literal \033) ──
-printf -v RED   '\033[0;31m'
-printf -v GREEN '\033[0;32m'
-printf -v YELLOW '\033[1;33m'
-printf -v CYAN  '\033[0;36m'
-printf -v BOLD  '\033[1m'
-printf -v DIM   '\033[2m'
-printf -v NC    '\033[0m'
+# ── Colors (honors NO_COLOR env var) ──
+if [ -n "${NO_COLOR:-}" ] || [ ! -t 1 ]; then
+  RED='' GREEN='' YELLOW='' CYAN='' BOLD='' DIM='' NC=''
+else
+  # printf -v stores actual ESC bytes, not literal \033
+  printf -v RED   '\033[0;31m'
+  printf -v GREEN '\033[0;32m'
+  printf -v YELLOW '\033[1;33m'
+  printf -v CYAN  '\033[0;36m'
+  printf -v BOLD  '\033[1m'
+  printf -v DIM   '\033[2m'
+  printf -v NC    '\033[0m'
+fi
 
 info()  { echo -e "${CYAN}  ->${NC} $1"; }
 ok()    { echo -e "${GREEN}  v${NC} $1"; }

@@ -20,14 +20,19 @@ BRANCH="main"
 TAR_URL="https://github.com/${REPO}/archive/refs/heads/${BRANCH}.tar.gz"
 INSTALL_DIR="${INSTALL_DIR:-opencpo}"
 
-# ── Colors (printf -v stores actual ESC bytes, not literal \033) ──
-printf -v RED   '\033[0;31m'
-printf -v GREEN '\033[0;32m'
-printf -v YELLOW '\033[1;33m'
-printf -v CYAN  '\033[0;36m'
-printf -v BOLD  '\033[1m'
-printf -v DIM   '\033[2m'
-printf -v NC    '\033[0m'
+# ── Colors (honors NO_COLOR env var) ──
+if [ -n "${NO_COLOR:-}" ] || [ ! -t 1 ]; then
+  RED='' GREEN='' YELLOW='' CYAN='' BOLD='' DIM='' NC=''
+else
+  # printf -v stores actual ESC bytes, not literal \033
+  printf -v RED   '\033[0;31m'
+  printf -v GREEN '\033[0;32m'
+  printf -v YELLOW '\033[1;33m'
+  printf -v CYAN  '\033[0;36m'
+  printf -v BOLD  '\033[1m'
+  printf -v DIM   '\033[2m'
+  printf -v NC    '\033[0m'
+fi
 
 info()  { echo -e "${CYAN}  ->${NC} $1"; }
 ok()    { echo -e "${GREEN}  v${NC} $1"; }
@@ -159,11 +164,19 @@ TMPDIR=$(mktemp -d)
 ARCHIVE="${TMPDIR}/opencpo.tar.gz"
 
 info "Downloading from ${TAR_URL} ..."
-if [ "$DL_NAME" = "curl" ]; then
-  $DL_CMD "$TAR_URL" -o "$ARCHIVE"
-else
-  $DL_CMD "$TAR_URL" > "$ARCHIVE"
-fi
+# Retry up to 3 times on failure
+for attempt in 1 2 3; do
+  if [ "$DL_NAME" = "curl" ]; then
+    $DL_CMD "$TAR_URL" -o "$ARCHIVE" 2>/dev/null
+  else
+    $DL_CMD "$TAR_URL" > "$ARCHIVE" 2>/dev/null
+  fi
+  if [ -s "$ARCHIVE" ]; then break; fi
+  if [ "$attempt" -lt 3 ]; then
+    warn "Download failed, retrying (attempt $attempt/3)..."
+    sleep 2
+  fi
+done
 
 if [ ! -s "$ARCHIVE" ]; then
   fail "Download failed -- check internet connection"
