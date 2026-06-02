@@ -58,6 +58,7 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
       MANAGEMENT_API_KEY: ${MANAGEMENT_API_KEY:-opencpo-mgmt-key-change-in-production}
+      API_KEY: ${MANAGEMENT_API_KEY:-opencpo-mgmt-key-change-in-production}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -78,7 +79,8 @@ services:
       - "${CPO_ADMIN_PORT:-8080}:8080"
     environment:
       OCPP_CORE_API: http://ocpp-core:8000
-      CORE_API_KEY: ${MANAGEMENT_API_KEY:-}
+      CORE_API_KEY: ${MANAGEMENT_API_KEY:-opencpo-mgmt-key-change-in-production}
+      JWT_SECRET: ${MANAGEMENT_API_KEY:-opencpo-mgmt-key-change-in-production}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost}
       ORG_NAME: ${ORG_NAME:-OpenCPO Demo}
     healthcheck:
