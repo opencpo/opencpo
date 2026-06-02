@@ -606,9 +606,10 @@ print('OK')
     fi
   done
 
-  # Start all services
-  info "Starting all services ..."
-  if $COMPOSE_CMD up -d; then
+  # Start all services (only those we actually built — optional services
+  # whose Dockerfiles are missing were excluded from BUILD_SERVICES)
+  info "Starting all services ($BUILD_SERVICES) ..."
+  if $COMPOSE_CMD up -d $BUILD_SERVICES; then
     ok "All services started"
 
     # Poll up to 90s for all services to become healthy
