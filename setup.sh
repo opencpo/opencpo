@@ -14,7 +14,7 @@
 
 set -euo pipefail
 
-VERSION="v0.2.3"
+VERSION="v0.2.4"
 
 # ── Global cleanup on exit ──
 cleanup() {
@@ -424,7 +424,7 @@ fi
 # ── Configuration Wizard ────────────────────────────────────────────────────
 header "Configuration"
 
-if [ -n "$PYTHON" ] || PYTHON=$(command -v python3 || command -v python); then
+if [ -n "${PYTHON:-}" ] || PYTHON=$(command -v python3 || command -v python); then
   if [ "$AUTO" = "1" ]; then
     info "Running configure.py --auto ..."
     "$PYTHON" configure.py --auto

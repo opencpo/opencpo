@@ -46,7 +46,7 @@ BANNER = (
     + "   \033[38;2;27;94;32m" + "  ╚██████╔╝██║     ███████╗██║ ╚████║╚██████╗██║     ╚██████╔╝" + RESET + "\n"
     + "   \033[38;2;13;60;20m" + "   ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚═╝      ╚═════╝ " + RESET + "\n"
     + DIM + "  Open Source EV Charging Platform · Zero Trust · OCPP 1.6/2.0.1 · ISO 15118 · PKI" + RESET + "\n"
-    + DIM + "  v0.2.3" + RESET + "\n"
+    + DIM + "  v0.2.4" + RESET + "\n"
     + "\n"
 )
 
@@ -326,7 +326,7 @@ def show_summary(config, env_path):
     print(color("│", CYAN) + f"  {color('Org:', DIM)} {config['org_name']}".ljust(55) + color("│", CYAN))
     print(color("│", CYAN) + f"  {color('URL:', DIM)} {config['public_url']}".ljust(55) + color("│", CYAN))
     print(color("│", CYAN) + f"  {color('Key:', DIM)} {config['secret_key'][:16]}...".ljust(55) + color("│", CYAN))
-    print(color("│", CYAN) + f"  {color('Login:', DIM)} admin / cpoadmin".ljust(55) + color("│", CYAN))
+    print(color("│", CYAN) + f"  {color('Setup:', DIM)} Create admin account on first visit at http://localhost:{config['admin_port']}".ljust(55) + color("│", CYAN))
 
     print(color("╰" + "─" * 56 + "╯", CYAN))
 
