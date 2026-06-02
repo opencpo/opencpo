@@ -415,6 +415,17 @@ done
 
 if [ "$BUILD_OK" = "1" ]; then
   ok "All images built successfully!"
+  echo ""
+
+  # ── Start services ──
+  header "Starting Services"
+  info "Running $COMPOSE_CMD up -d ..."
+  if $COMPOSE_CMD up -d; then
+    ok "All services started!"
+  else
+    fail "Failed to start services. Check the output above."
+    exit 1
+  fi
 else
   fail "Docker build failed. The Docker daemon may need to be started, or"
   fail "you may need to add your user to the docker group:"
