@@ -14,7 +14,7 @@
 
 set -euo pipefail
 
-VERSION="v0.1.8"
+VERSION="v0.1.9"
 
 # ── Global cleanup on exit ──
 cleanup() {
@@ -490,7 +490,7 @@ if [ "$BUILD_OK" = "1" ]; then
     TABLE_COUNT=$($COMPOSE_CMD exec -T postgres psql -U "${POSTGRES_USER:-ocpp}" -d "${POSTGRES_DB:-ocpp}" -t -A -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'" 2>/dev/null || echo "0")
     if [ "$TABLE_COUNT" = "0" ]; then
       info "Applying database schema ..."
-      if $COMPOSE_CMD exec -T postgres psql -U "${POSTGRES_USER:-ocpp}" -d "${POSTGRES_DB:-ocpp}" < "opencpo-core/db/schema.sql" 2>/dev/null; then
+      if $COMPOSE_CMD exec -T postgres psql -U "${POSTGRES_USER:-ocpp}" -d "${POSTGRES_DB:-ocpp}" < "opencpo-core/db/schema.sql" &>/dev/null; then
         ok "Database schema applied"
       else
         fail "Failed to apply database schema"
@@ -506,7 +506,7 @@ if [ "$BUILD_OK" = "1" ]; then
     if [ -f "$migration" ]; then
       migration_name=$(basename "$migration")
       info "Applying migration: $migration_name ..."
-      $COMPOSE_CMD exec -T postgres psql -U "${POSTGRES_USER:-ocpp}" -d "${POSTGRES_DB:-ocpp}" < "$migration" 2>/dev/null || true
+      $COMPOSE_CMD exec -T postgres psql -U "${POSTGRES_USER:-ocpp}" -d "${POSTGRES_DB:-ocpp}" < "$migration" &>/dev/null || true
     fi
   done
 
