@@ -58,18 +58,7 @@ BANNER = (
     + "\n" + RESET + "\n"
 )
 
-SHORT_BANNER = (
-    "\n" + BOLD + CYAN
-    + "  ____                   _____ _____   ____  \n"
-    + " / __ \\                 / ____|  __ \\ / __ \\ \n"
-    + "| |  | |_ __   ___ _ __| |    | |__) | |  | |\n"
-    + "| |  | | '_ \\ / _ \\ '_ \\| |    |  ___/| |  | |\n"
-    + "| |__| | |_) |  __/ | | | |____| |    | |__| |\n"
-    + " \\____/| .__/ \\___|_| |_|\\_____|_|     \\____/ \n"
-    + "       | |                                   \n"
-    + "       |_|          \u26a1 Configuration Wizard   "
-    + RESET + "\n"
-)
+
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
@@ -447,7 +436,7 @@ def main():
         print(f"    4. Download certs for your chargers")
         print()
         print("  Docs:  https://github.com/opencpo/opencpo")
-        print("  Community:  https://discord.gg/opencpo")
+        print("  Community:  https://discord.gg/ra9pnygmrt")
         print()
     else:
         print()

@@ -43,6 +43,28 @@ info()  { echo -e "${CYAN}  →${NC} $1"; }
 ok()    { echo -e "${GREEN}  ✓${NC} $1"; }
 warn()  { echo -e "${YELLOW}  ⚠${NC} $1"; }
 fail()  { echo -e "${RED}  ✗${NC} $1"; }
+
+banner() {
+  echo ""
+  echo -e "${CYAN}╔══════════════════════════════════════════════════════════════════════════╗${NC}"
+  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}               ____                    _____ _____   ____                 ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}              / __ \                  / ____|  __ \ / __ \                ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}             | |  | |_ __   ___ _ __ | |    | |__) | |  | |               ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}             | |  | | '_ \ / _ \ '_ \| |    |  ___/| |  | |               ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}             | |__| | |_) |  __/ | | | |____| |    | |__| |               ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}              \____/| .__/ \___|_| |_|\_____|_|     \____/                ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}                    | |                                                   ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}                    |_|                                                   ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}          ⚡ Open Source EV Charging Platform ⚡                          ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}       Zero Trust · OCPP 1.6/2.0.1 · ISO 15118 · PKI                    ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════════════╝${NC}"
+  echo ""
+}
+
 header() {
   echo ""
   echo -e "${CYAN}╔══════════════════════════════════════════════════════════════╗${NC}"
@@ -62,12 +84,10 @@ confirm() {
 }
 
 # ── Banner ─────────────────────────────────────────────────────────────────
-header "${BOLD}OpenCPO — Bootstrap Installer${NC}
-${DIM}  Open Source EV Charging Platform${NC}
-${DIM}  Zero Trust · OCPP 1.6/2.0.1 · ISO 15118 · PKI${NC}"
+banner
 
 # ── Detect OS ──────────────────────────────────────────────────────────────
-header "Detecting System"
+header "System"
 
 OS="unknown"
 PKG_INSTALL=""
@@ -105,7 +125,7 @@ fi
 
 # ── Dependency Check / Install ──────────────────────────────────────────────
 if [ "$SKIP_DEPS" = "0" ]; then
-  header "Checking Dependencies"
+  header "Dependencies"
 
   NEED_INSTALL=""
   ALL_OK=1
@@ -219,8 +239,6 @@ if [ "$SKIP_DEPS" = "0" ]; then
 
       case "$OS" in
         debian)
-          # Git and Python from apt
-          NEED_APT=""
           info "Installing: git, python3, python3-venv"
           $SUDO apt-get update -qq && $SUDO apt-get install -y -qq git python3 python3-venv
 
@@ -246,7 +264,6 @@ if [ "$SKIP_DEPS" = "0" ]; then
               curl -fsSL https://get.docker.com | $SUDO sh
             fi
           fi
-          # Add user to docker group
           $SUDO usermod -aG docker "${USER:-root}" 2>/dev/null || true
           ok "Packages installed! You may need to log out and back in for Docker group to take effect."
           ;;
@@ -306,7 +323,7 @@ if [ "$SKIP_DEPS" = "0" ]; then
 fi
 
 # ── Clone Components ───────────────────────────────────────────────────────
-header "Cloning Components"
+header "Components"
 
 COMPONENTS=(
   opencpo-core

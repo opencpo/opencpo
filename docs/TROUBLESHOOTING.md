@@ -171,7 +171,7 @@ docker compose up -d
 ## Getting Help
 
 - **GitHub Issues**: [github.com/opencpo/opencpo/issues](https://github.com/opencpo/opencpo/issues)
-- **Discord**: [discord.gg/opencpo](https://discord.gg/opencpo)
+- **Discord**: [discord.gg/ra9pnygmrt](https://discord.gg/ra9pnygmrt)
 - **Documentation**: [github.com/opencpo/opencpo](https://github.com/opencpo/opencpo)
 
 When reporting an issue, please include:

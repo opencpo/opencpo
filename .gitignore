@@ -8,6 +8,10 @@ ocpp-charge-app/
 ocpp-compliance-tester/
 ocpp-charger-farm/
 
+# Python
+__pycache__/
+*.pyc
+
 # OS
 .DS_Store
 Thumbs.db

@@ -34,6 +34,27 @@ ok()    { echo -e "${GREEN}  ✓${NC} $1"; }
 warn()  { echo -e "${YELLOW}  ⚠${NC} $1"; }
 fail()  { echo -e "${RED}  ✗${NC} $1"; }
 
+banner() {
+  echo ""
+  echo -e "${CYAN}╔══════════════════════════════════════════════════════════════════════════╗${NC}"
+  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}               ____                    _____ _____   ____                 ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}              / __ \                  / ____|  __ \ / __ \                ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}             | |  | |_ __   ___ _ __ | |    | |__) | |  | |               ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}             | |  | | '_ \ / _ \ '_ \| |    |  ___/| |  | |               ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}             | |__| | |_) |  __/ | | | |____| |    | |__| |               ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}              \____/| .__/ \___|_| |_|\_____|_|     \____/                ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}                    | |                                                   ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}                    |_|                                                   ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}          ⚡ Open Source EV Charging Platform ⚡                          ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}       Zero Trust · OCPP 1.6/2.0.1 · ISO 15118 · PKI                    ${CYAN}║${NC}"
+  echo -e "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
+  echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════════════╝${NC}"
+  echo ""
+}
+
 header() {
   echo ""
   echo -e "${CYAN}╔══════════════════════════════════════════════════════════════╗${NC}"
@@ -50,11 +71,11 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# ── Detect OS ──
-header "${BOLD}OpenCPO — Bootstrap Installer${NC}
-${DIM}  Zero-dependency installer${NC}"
+# ── Banner ──
+banner
 
-header "Detecting System"
+# ── Detect OS ──
+header "System"
 
 OS="unknown"
 PKG_CMD=""
@@ -73,7 +94,7 @@ fi
 ok "Detected: ${OS^}"
 
 # ── Find download tool ──
-header "Checking Tools"
+header "Tools"
 
 DL_CMD=""
 DL_NAME=""
@@ -138,7 +159,12 @@ TMPDIR=$(mktemp -d)
 ARCHIVE="${TMPDIR}/opencpo.tar.gz"
 
 info "Downloading from ${TAR_URL} ..."
-$DL_CMD "$TAR_URL" -o "$ARCHIVE" 2>/dev/null || $DL_CMD "$TAR_URL" > "$ARCHIVE"
+# curl: -o saves to file; wget: -qO- pipes to stdout, redirect to file
+if [ "$DL_NAME" = "curl" ]; then
+  $DL_CMD "$TAR_URL" -o "$ARCHIVE"
+else
+  $DL_CMD "$TAR_URL" > "$ARCHIVE"
+fi
 
 if [ ! -s "$ARCHIVE" ]; then
   fail "Download failed — check internet connection"
@@ -182,8 +208,6 @@ if [ ! -f setup.sh ]; then
 fi
 
 chmod +x setup.sh
-echo "  Running setup.sh ..."
-echo ""
 
 # Run setup.sh, passing along any args the user gave (--auto, etc.)
 exec bash setup.sh "$@"
