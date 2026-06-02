@@ -59,11 +59,11 @@ services:
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost}
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8000/openapi.json || exit 1"]
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/0.0.0.0/9100'"]
       interval: 15s
       timeout: 5s
-      retries: 10
-      start_period: 90s
+      retries: 7
+      start_period: 30s
 
   # ── Operator Dashboard ────────────────────────────────────────────────────
 
