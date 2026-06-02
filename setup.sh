@@ -14,6 +14,21 @@
 
 set -euo pipefail
 
+# ── Global cleanup on exit ──
+cleanup() {
+  local rc=$?
+  if [ "$rc" -ne 0 ] && [ "$rc" -ne 130 ] && [ "$rc" -ne 143 ]; then
+    echo ""
+    warn "Setup failed (exit code $rc). Common fixes:"
+    warn "  • Docker daemon not running?  sudo systemctl start docker"
+    warn "  • Port conflict?              sudo lsof -i :8080"
+    warn "  • Missing deps?              ./setup.sh --skip-deps"
+    warn "  • Full reinstall:            ./uninstall.sh && curl ... | bash"
+    echo ""
+  fi
+}
+trap cleanup EXIT
+
 ORG="${ORG:-opencpo}"
 BASE_URL="https://github.com/$ORG"
 # Auto-detect non-interactive mode: when piped (curl | bash), stdin is not a TTY
@@ -352,6 +367,13 @@ COMPONENTS=(
   opencpo-charger-farm
 )
 
+# Remove stale docker volumes if .env was regenerated (passwords changed)
+if [ -f .env.bak ]; then
+  info "New .env detected — removing stale docker volumes ..."
+  $COMPOSE_CMD down -v 2>/dev/null || true
+  ok "Stale volumes removed"
+fi
+
 for repo in "${COMPONENTS[@]}"; do
   if [ -d "$repo/.git" ]; then
     ok "$repo already exists -- pulling latest"
@@ -465,7 +487,23 @@ if [ "$BUILD_OK" = "1" ]; then
   # Start all services
   info "Starting all services ..."
   if $COMPOSE_CMD up -d; then
-    ok "All services started!"
+    ok "All services started"
+
+    # Poll up to 90s for all services to become healthy
+    info "Waiting for services to pass health checks ..."
+    for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+      UNHEALTHY=$($COMPOSE_CMD ps --format '{{.Status}}' 2>/dev/null | grep -c "unhealthy" || true)
+      if [ "$UNHEALTHY" = "0" ]; then
+        ok "All services healthy!"
+        break
+      fi
+      if [ "$i" = "15" ]; then
+        warn "Some services still starting — you can check with: docker compose ps"
+        $COMPOSE_CMD ps --format 'table {{.Name}}\t{{.Status}}'
+        break
+      fi
+      sleep 6
+    done
   else
     fail "Failed to start services. Check the output above."
     exit 1

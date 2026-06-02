@@ -206,6 +206,11 @@ fi
 
 TARGET="${INSTALL_DIR}"
 if [ -d "$TARGET" ]; then
+  # Clean up Docker volumes/data from previous install
+  if [ -f "$TARGET/docker-compose.yml" ]; then
+    docker compose -f "$TARGET/docker-compose.yml" down -v 2>/dev/null || \
+      sudo docker compose -f "$TARGET/docker-compose.yml" down -v 2>/dev/null || true
+  fi
   rm -rf "$TARGET"
   warn "Removed existing '$TARGET' directory"
 fi

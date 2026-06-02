@@ -180,7 +180,8 @@ def check_docker():
 
 def generate_secret(length=48):
     """Generate a cryptographically random secret."""
-    alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+    # Avoid $ and # — $ triggers docker-compose interpolation, # starts .env comment
+    alphabet = string.ascii_letters + string.digits + "!@%^*"
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
@@ -293,6 +294,10 @@ CHARGER_FARM_PORT={config["charger_farm_port"]}
         backup = env_path + ".bak"
         shutil.copy2(env_path, backup)
         print(color(f"  Existing .env backed up to .env.bak", DIM))
+        print(color(f"  Stale docker volumes (pgdata) may need removal if passwords changed", YELLOW))
+
+    # Escape any remaining $ as $$ for docker-compose interpolation safety
+    content = content.replace("$", "$$")
 
     with open(env_path, "w") as f:
         f.write(content)
