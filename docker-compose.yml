@@ -73,7 +73,7 @@ services:
       start_period: 45s
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./:/app/opencpo:ro
+      - ./:/app/opencpo:rw
       - backup-data:/app/backups
 
   # ── Operator Dashboard ────────────────────────────────────────────────────
