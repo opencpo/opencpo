@@ -17,7 +17,13 @@ set -euo pipefail
 
 REPO="opencpo/opencpo"
 BRANCH="main"
-TAR_URL="https://github.com/${REPO}/archive/refs/heads/${BRANCH}.tar.gz"
+# Fetch the current HEAD SHA to bypass GitHub CDN cache on archive download
+INSTALLER_SHA=$(curl -fsSL "https://api.github.com/repos/${REPO}/git/refs/heads/${BRANCH}" 2>/dev/null | grep -o '"sha": "[a-f0-9]*"' | head -1 | cut -d'"' -f4 || echo "")
+if [ -n "$INSTALLER_SHA" ]; then
+  TAR_URL="https://github.com/${REPO}/archive/${INSTALLER_SHA}.tar.gz"
+else
+  TAR_URL="https://github.com/${REPO}/archive/refs/heads/${BRANCH}.tar.gz"
+fi
 INSTALL_DIR="${INSTALL_DIR:-opencpo}"
 
 # ── Colors (honors NO_COLOR env var) ──
@@ -219,4 +225,4 @@ fi
 
 chmod +x setup.sh
 
-exec bash setup.sh "$@"
+exec bash setup.sh --auto "$@"

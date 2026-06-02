@@ -16,7 +16,10 @@ set -euo pipefail
 
 ORG="${ORG:-opencpo}"
 BASE_URL="https://github.com/$ORG"
-AUTO=0
+# Auto-detect non-interactive mode: when piped (curl | bash), stdin is not a TTY
+if [ ! -t 0 ]; then
+  AUTO=1
+fi
 SKIP_DEPS=0
 
 for arg in "$@"; do
@@ -294,12 +297,12 @@ if [ "$SKIP_DEPS" = "0" ]; then
           ok "Packages installed! Open Docker.app to start the daemon."
           ;;
       esac
-
+      # Re-check with sudo fallback (docker group may not apply to current shell)
       ALL_OK=1
       command -v git &>/dev/null || ALL_OK=0
       command -v python3 &>/dev/null || ALL_OK=0
-      docker info &>/dev/null 2>&1 || ALL_OK=0
-      command -v docker-compose &>/dev/null || docker compose version &>/dev/null 2>&1 || ALL_OK=0
+      docker info &>/dev/null 2>&1 || sudo docker info &>/dev/null 2>&1 || ALL_OK=0
+      command -v docker-compose &>/dev/null || docker compose version &>/dev/null 2>&1 || sudo docker compose version &>/dev/null 2>&1 || ALL_OK=0
 
       if [ "$ALL_OK" = "0" ]; then
         warn "Some dependencies still missing after install. Run setup.sh again once resolved."
@@ -314,11 +317,13 @@ if [ "$SKIP_DEPS" = "0" ]; then
       echo ""
     fi
   fi
-
+  # Detect compose command (may need sudo if docker group not yet active)
   if command -v docker-compose &>/dev/null; then
     COMPOSE_CMD="docker-compose"
   elif docker compose version &>/dev/null 2>&1; then
     COMPOSE_CMD="docker compose"
+  elif sudo docker compose version &>/dev/null 2>&1; then
+    COMPOSE_CMD="sudo docker compose"
   else
     COMPOSE_CMD="docker compose"
   fi
