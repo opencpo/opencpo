@@ -60,6 +60,11 @@ services:
       MANAGEMENT_API_KEY: ${MANAGEMENT_API_KEY:-opencpo-mgmt-key-change-in-production}
       API_KEY: ${MANAGEMENT_API_KEY:-opencpo-mgmt-key-change-in-production}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost}
+      # Backup / update paths
+      UPDATE_SCRIPT: /app/opencpo/update.sh
+      BACKUP_DIR: /app/backups
+      DB_UTILS: /app/opencpo/scripts/db-utils.sh
+      CORE_API_PUBLIC_URL: ${CORE_API_PUBLIC_URL:-http://localhost:8000}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 15s
@@ -68,7 +73,8 @@ services:
       start_period: 45s
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./:/app/opencpo
+      - ./:/app/opencpo:ro
+      - backup-data:/app/backups
 
   # ── Operator Dashboard ────────────────────────────────────────────────────
 
@@ -135,4 +141,6 @@ services:
 
 volumes:
   pgdata:
+    driver: local
+  backup-data:
     driver: local
