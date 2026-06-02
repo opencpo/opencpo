@@ -59,11 +59,11 @@ services:
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost}
     healthcheck:
-      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/0.0.0.0/9100'"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 15s
       timeout: 5s
       retries: 7
-      start_period: 30s
+      start_period: 45s
 
   # ── Operator Dashboard ────────────────────────────────────────────────────
 

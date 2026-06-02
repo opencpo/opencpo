@@ -510,12 +510,6 @@ if [ "$BUILD_OK" = "1" ]; then
     fi
   done
 
-  # Seed default admin invitation (idempotent — only inserts if missing)
-  if [ -f "opencpo-core/db/seed/admin_seed.sql" ]; then
-    info "Seeding default admin account (admin / cpoadmin) ..."
-    $COMPOSE_CMD exec -T postgres psql -U "${POSTGRES_USER:-ocpp}" -d "${POSTGRES_DB:-ocpp}" < "opencpo-core/db/seed/admin_seed.sql" &>/dev/null || true
-  fi
-
   # Start all services
   info "Starting all services ..."
   if $COMPOSE_CMD up -d; then
