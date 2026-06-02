@@ -155,8 +155,26 @@ def check_docker():
         print()
         print(color("  ⚠  Missing dependencies detected.", YELLOW))
         print()
-        print("  Install Docker:")
-        print("    curl -fsSL https://get.docker.com | sh")
+        print("  OpenCPO setup.sh can install these automatically:")
+        print("    Run: ./setup.sh")
+        print()
+        print("  Or install manually:")
+        for name, ok, _ in checks:
+            if not ok:
+                if "Docker" in name:
+                    if "Compose" in name:
+                        print("    • Docker Compose:  sudo apt install docker-compose-plugin")
+                    else:
+                        print("    • Docker:          curl -fsSL https://get.docker.com | sh")
+        print()
+        print("  Linux (apt):")
+        print("    sudo apt-get update && sudo apt-get install -y \\")
+        for name, ok, _ in checks:
+            if not ok:
+                if "Docker" in name and "Compose" not in name:
+                    print("         docker.io \\")
+                elif "Compose" in name:
+                    print("         docker-compose-plugin \\")
         print()
         if not confirm("  Continue anyway?", default=False):
             print(color("  Aborting.", RED))

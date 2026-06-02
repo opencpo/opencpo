@@ -10,36 +10,39 @@
 
 ## Quick Start (5 minutes)
 
+The `setup.sh` script handles everything — dependencies, cloning, configuration, and building:
+
 ```bash
 # 1. Clone the orchestrator
 git clone https://github.com/opencpo/opencpo.git
 cd opencpo
 
-# 2. Clone all component repos
+# 2. Run the bootstrap installer
 ./setup.sh
-
-# 3. Run the configuration wizard
-python3 configure.py
-
-# 4. Open the dashboard
-open http://localhost:8080
 ```
 
-The wizard will:
-- Check your system for Docker + Compose
-- Ask for your org name, database passwords, and ports
+That's it. `setup.sh` will:
+- Detect your OS (Ubuntu, Fedora, Arch, macOS)
+- Check for **git**, **Python 3**, **Docker**, and **Docker Compose**
+- **Auto-install any missing dependencies** (offers to install via apt/dnf/pacman/brew)
+- Clone all 5 component repos from github.com/opencpo
+- Launch the **interactive configuration wizard** with ASCII banner
+- Prompt for your org name, URLs, and secrets
 - Generate a `.env` file with your settings
 - Build all Docker images
-- Start all services
+
+When done, open **http://localhost:8080** — your CPO admin panel is ready.
+
+> **Pro tip:** For a fully automated install (no prompts), run `./setup.sh --auto`
 
 ## Manual Installation
 
-If you prefer to configure manually instead of using the wizard:
+If you prefer to do things step-by-step instead of using the wizard:
 
 ```bash
 git clone https://github.com/opencpo/opencpo.git
 cd opencpo
-./setup.sh
+./setup.sh --skip-deps   # skip automated dependency install
 
 # Create .env from example
 cp .env.example .env
