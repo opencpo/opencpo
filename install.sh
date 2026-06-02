@@ -24,7 +24,7 @@ if [ -n "$INSTALLER_SHA" ]; then
 else
   TAR_URL="https://github.com/${REPO}/archive/refs/heads/${BRANCH}.tar.gz"
 fi
-INSTALL_DIR="${INSTALL_DIR:-opencpo}"
+INSTALL_DIR="${INSTALL_DIR:-${HOME}/opencpo}"
 
 # ── Colors (honors NO_COLOR env var) ──
 if [ -n "${NO_COLOR:-}" ] || [ ! -t 1 ]; then
@@ -219,12 +219,12 @@ if [ -d "$TARGET" ]; then
     docker compose -f "$TARGET/docker-compose.yml" down -v 2>/dev/null || \
       sudo docker compose -f "$TARGET/docker-compose.yml" down -v 2>/dev/null || true
   fi
-  rm -rf "$TARGET"
+  rm -rf "$TARGET" 2>/dev/null || sudo rm -rf "$TARGET" 2>/dev/null
   warn "Removed existing '$TARGET' directory"
 fi
 
 mv "$SRC_DIR" "$TARGET"
-ok "Extracted to $(pwd)/${TARGET}"
+ok "Extracted to ${TARGET}"
 
 # ── Hand off to setup.sh ──
 header "Starting Setup"
