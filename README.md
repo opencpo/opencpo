@@ -2,7 +2,7 @@
 
 > The first complete open source EV charging platform.
 
-Everything you need to run a Charge Point Operator — from protocol to driver app. One `docker compose up` and you're live.
+Everything you need to run a Charge Point Operator — from protocol to driver app. One command and you're live.
 
 ---
 
@@ -19,28 +19,20 @@ Everything you need to run a Charge Point Operator — from protocol to driver a
 
 ## Quick Start
 
-The **one-liner** installs everything — no git, Python, or Docker needed:
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/opencpo/opencpo/main/install.sh | bash
 ```
 
-This will:
+No git, Python, or Docker needed. This single command will:
 - Detect your OS (Ubuntu, Fedora, Arch, macOS)
-- Install **Python 3** if missing
-- Install **Docker + Compose** via the official script
-- Clone all 5 component repos
-- Run the configuration wizard
-- Build all Docker images
-
-> **Already have git?** Same result: `git clone https://github.com/opencpo/opencpo.git && cd opencpo && ./setup.sh`
-
-When done, open **http://localhost:8080** — your CPO admin panel is ready.
-```
-
-Open **http://localhost:8080** — your CPO admin panel is ready.
+- Install **Python 3**, **Docker**, and **Compose** if missing
+- Clone all component repos
+- Run the setup wizard (or auto-configure if piping)
+- Build all Docker images and start everything
 
 > First run takes a few minutes to build images. Subsequent starts are instant.
+
+Open **http://localhost:8080** — the welcome screen and setup wizard will guide you through configuring your admin account, Tailscale, branding, pricing, and more.
 
 ---
 
@@ -118,6 +110,7 @@ The operator's command centre. A React dashboard for managing your charging netw
 ### [ocpp-charge-app](https://github.com/opencpo/opencpo-charge-app)
 Driver-facing Progressive Web App. Scan a QR code → authorize → charge → pay. No app store. Works on any smartphone. Supports guest sessions, RFID-linked accounts, and real-time session status.
 
+### [ocpp-tester](https://github.com/opencpo/opencpo-tester)
 Automated charger certification. Point it at any charger, run the test suite, get a compliance report. Covers the full OCPP 1.6 and 2.0.1 message specification with configurable test profiles.
 
 ### [ocpp-charger-farm](https://github.com/opencpo/opencpo-charger-farm)
@@ -142,36 +135,37 @@ Each component has full docs in its `docs/` directory:
 opencpo/          ← you are here (orchestration only)
 ├── docker-compose.yml  ← spin up everything
 ├── setup.sh            ← clone all component repos
+├── configure.py        ← CLI configuration wizard
+├── install.sh          ← zero-dependency bootstrap (pipe this!)
 ├── .env.example        ← configuration reference
 ├── README.md
 ├── CONTRIBUTING.md
 ├── LICENSE
 │
-├── ocpp-core/          ← cloned by setup.sh
-├── ocpp-cpo-admin/     ← cloned by setup.sh
-├── ocpp-charge-app/    ← cloned by setup.sh
-└── ocpp-charger-farm/  ← cloned by setup.sh
+├── opencpo-core/       ← cloned by setup.sh
+├── opencpo-admin/      ← cloned by setup.sh
+├── opencpo-charge-app/ ← cloned by setup.sh
+└── opencpo-charger-farm/ ← cloned by setup.sh
 ```
 
-> **This repo contains no application code.** It's pure orchestration — compose files, scripts, and docs. Each component lives in its own repo and is a git submodule or clone.
+> **This repo contains no application code.** It's pure orchestration — compose files, scripts, and docs.
 
 ---
 
 ## Configuration
 
-Copy `.env.example` to `.env` and adjust as needed. All defaults work for local development.
+All configuration is handled through the **web setup wizard** on first visit to `http://localhost:8080`. The wizard walks you through:
 
-Key settings:
+1. **Admin Account** — create your first admin user
+2. **Tailscale** — expose services on your tailnet
+3. **Organization** — name, timezone, currency, public URL
+4. **Branding** — accent color, logo, charge app skin
+5. **SMTP** — email sending for notifications
+6. **PKI** — initialize charger certificate infrastructure
+7. **Pricing** — default tariff and rates
+8. **Features** — toggle OCPI roaming, billing, EMS, ISO 15118
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `POSTGRES_PASSWORD` | `ocpp` | Database password (change in production!) |
-| `ORG_NAME` | `My CPO` | Your organisation name shown in the UI |
-| `PUBLIC_URL` | `http://localhost` | Public base URL for QR codes and deep links |
-| `OCPP_16_WS_PORT` | `9100` | OCPP 1.6 WebSocket port |
-| `OCPP_201_WS_PORT` | `9201` | OCPP 2.0.1 WebSocket port |
-
-See `.env.example` for the full list.
+For headless deployments, `./configure.py --auto` generates `.env` with secure defaults.
 
 ---
 
@@ -179,13 +173,11 @@ See `.env.example` for the full list.
 
 For production, you'll want to:
 
-1. Change all default passwords in `.env`
+1. Change all default passwords
 2. Put a reverse proxy (nginx/Caddy) in front with TLS
 3. Use managed Postgres (RDS, Supabase, etc.) or enable TimescaleDB backups
 4. Set `PUBLIC_URL` to your real domain
 5. Configure SMTP for email notifications
-
-See each component's `docs/deployment.md` for detailed production guidance.
 
 ---
 
