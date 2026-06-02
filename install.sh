@@ -17,6 +17,7 @@ set -euo pipefail
 
 REPO="opencpo/opencpo"
 BRANCH="main"
+VERSION="v0.1.3"
 # Fetch the current HEAD SHA to bypass GitHub CDN cache on archive download
 INSTALLER_SHA=$(curl -fsSL "https://api.github.com/repos/${REPO}/git/refs/heads/${BRANCH}" 2>/dev/null | grep -o '"sha": "[a-f0-9]*"' | head -1 | cut -d'"' -f4 || echo "")
 if [ -n "$INSTALLER_SHA" ]; then
@@ -29,15 +30,23 @@ INSTALL_DIR="${INSTALL_DIR:-${HOME}/opencpo}"
 # ── Colors (honors NO_COLOR env var) ──
 if [ -n "${NO_COLOR:-}" ] || [ ! -t 1 ]; then
   RED='' GREEN='' YELLOW='' CYAN='' BOLD='' DIM='' NC=''
+  G1='' G2='' G3='' G4='' G5='' G6=''
 else
-  # printf -v stores actual ESC bytes, not literal \033
-  printf -v RED   '\033[0;31m'
-  printf -v GREEN '\033[0;32m'
-  printf -v YELLOW '\033[1;33m'
-  printf -v CYAN  '\033[0;36m'
-  printf -v BOLD  '\033[1m'
-  printf -v DIM   '\033[2m'
-  printf -v NC    '\033[0m'
+  # printf -v stores actual ESC bytes, not literal \\033
+  printf -v RED   '\\033[0;31m'
+  printf -v GREEN '\\033[0;32m'
+  printf -v YELLOW '\\033[1;33m'
+  printf -v CYAN  '\\033[0;36m'
+  printf -v BOLD  '\\033[1m'
+  printf -v DIM   '\\033[2m'
+  printf -v NC    '\\033[0m'
+  # Gradient: bright cyan → teal → green (used in banner)
+  printf -v G1 '\\033[38;2;0;229;255m'   # #00E5FF
+  printf -v G2 '\\033[38;2;0;184;212m'   # #00B8D4
+  printf -v G3 '\\033[38;2;0;150;136m'   # #009688
+  printf -v G4 '\\033[38;2;56;142;60m'   # #388E3C
+  printf -v G5 '\\033[38;2;27;94;32m'    # #1B5E20
+  printf -v G6 '\\033[38;2;13;60;20m'    # #0D3C14
 fi
 
 info()  { echo -e "${CYAN}  ->${NC} $1"; }
@@ -47,30 +56,23 @@ fail()  { echo -e "${RED}  x${NC} $1"; }
 
 banner() {
   printf '\n'
-  printf '%s\n' "${CYAN}╔══════════════════════════════════════════════════════════════════════════╗${NC}"
-  printf '%s\n' "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
-  printf '%s\n' "${CYAN}║${NC}               ____                    _____ _____   ____                 ${CYAN}║${NC}"
-  printf '%s\n' "${CYAN}║${NC}              / __ \                  / ____|  __ \ / __ \                ${CYAN}║${NC}"
-  printf '%s\n' "${CYAN}║${NC}             | |  | |_ __   ___ _ __ | |    | |__) | |  | |               ${CYAN}║${NC}"
-  printf '%s\n' "${CYAN}║${NC}             | |  | | '_ \ / _ \ '_ \| |    |  ___/| |  | |               ${CYAN}║${NC}"
-  printf '%s\n' "${CYAN}║${NC}             | |__| | |_) |  __/ | | | |____| |    | |__| |               ${CYAN}║${NC}"
-  printf '%s\n' "${CYAN}║${NC}              \____/| .__/ \___|_| |_|\_____|_|     \____/                ${CYAN}║${NC}"
-  printf '%s\n' "${CYAN}║${NC}                    | |                                                   ${CYAN}║${NC}"
-  printf '%s\n' "${CYAN}║${NC}                    |_|                                                   ${CYAN}║${NC}"
-  printf '%s\n' "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
-  printf '%s\n' "${CYAN}║${NC}          Open Source EV Charging Platform                               ${CYAN}║${NC}"
-  printf '%s\n' "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
-  printf '%s\n' "${CYAN}║${NC}       Zero Trust . OCPP 1.6/2.0.1 . ISO 15118 . PKI                    ${CYAN}║${NC}"
-  printf '%s\n' "${CYAN}║${NC}                                                                         ${CYAN}║${NC}"
-  printf '%s\n' "${CYAN}╚══════════════════════════════════════════════════════════════════════════╝${NC}"
+  printf '%s\n' "${G1}   ██████╗ ██████╗ ███████╗███╗   ██╗ ██████╗██████╗ ██████╗ ${NC}"
+  printf '%s\n' "${G2}  ██╔═══██╗██╔══██╗██╔════╝████╗  ██║██╔════╝██╔══██╗╚════██╗${NC}"
+  printf '%s\n' "${G3}  ██║   ██║██████╔╝█████╗  ██╔██╗ ██║██║     ██████╔╝ █████╔╝${NC}"
+  printf '%s\n' "${G4}  ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██║     ██╔═══╝  ╚═══██╗${NC}"
+  printf '%s\n' "${G5}  ╚██████╔╝██║     ███████╗██║ ╚████║╚██████╗██║     ██████╔╝${NC}"
+  printf '%s\n' "${G6}   ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚═╝     ╚═════╝ ${NC}"
+  printf '\n'
+  printf '%s\n' "${DIM}  Open Source EV Charging Platform · Zero Trust · OCPP 1.6/2.0.1 · ISO 15118 · PKI${NC}"
+  printf '%s\n' "${DIM}  ${VERSION}${NC}"
   printf '\n'
 }
 
 header() {
   echo ""
-  echo -e "${CYAN}╔══════════════════════════════════════════════════════════════╗${NC}"
-  echo -e "${CYAN}║${NC}  $1"
-  echo -e "${CYAN}╚══════════════════════════════════════════════════════════════╝${NC}"
+  printf '%s\n' "${CYAN}╭─────────────────────────────────────────────────────────────────╮${NC}"
+  printf '%s\n' "${CYAN}│${NC}  ${BOLD}$1${NC}"
+  printf '%s\n' "${CYAN}╰─────────────────────────────────────────────────────────────────╯${NC}"
   echo ""
 }
 
