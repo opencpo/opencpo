@@ -219,26 +219,49 @@ if [ "$SKIP_DEPS" = "0" ]; then
 
       case "$OS" in
         debian)
-          info "Updating package lists..."
-          $SUDO apt-get update -qq
-          info "Installing: git, python3, python3-venv, docker.io, docker-compose-plugin"
-          $SUDO apt-get install -y -qq git python3 python3-venv docker.io docker-compose-plugin
+          # Git and Python from apt
+          NEED_APT=""
+          info "Installing: git, python3, python3-venv"
+          $SUDO apt-get update -qq && $SUDO apt-get install -y -qq git python3 python3-venv
+
+          # Docker via official script (handles repo setup, compose plugin, all deps)
+          if ! command -v docker &>/dev/null; then
+            info "Installing Docker via official script..."
+            if command -v curl &>/dev/null; then
+              curl -fsSL https://get.docker.com | $SUDO sh
+            elif command -v wget &>/dev/null; then
+              wget -qO- https://get.docker.com | $SUDO sh
+            else
+              $SUDO apt-get install -y -qq curl
+              curl -fsSL https://get.docker.com | $SUDO sh
+            fi
+          elif ! docker compose version &>/dev/null 2>&1 && ! command -v docker-compose &>/dev/null; then
+            info "Docker found but Compose missing — installing compose plugin..."
+            if command -v curl &>/dev/null; then
+              curl -fsSL https://get.docker.com | $SUDO sh
+            elif command -v wget &>/dev/null; then
+              wget -qO- https://get.docker.com | $SUDO sh
+            else
+              $SUDO apt-get install -y -qq curl
+              curl -fsSL https://get.docker.com | $SUDO sh
+            fi
+          fi
           # Add user to docker group
-          $SUDO usermod -aG docker "$USER" 2>/dev/null || true
+          $SUDO usermod -aG docker "${USER:-root}" 2>/dev/null || true
           ok "Packages installed! You may need to log out and back in for Docker group to take effect."
           ;;
         fedora)
           info "Installing: git, python3, docker, docker-compose-plugin"
           $SUDO dnf install -y git python3 docker docker-compose-plugin
           $SUDO systemctl enable --now docker
-          $SUDO usermod -aG docker "$USER" 2>/dev/null || true
+          $SUDO usermod -aG docker "${USER:-root}" 2>/dev/null || true
           ok "Packages installed!"
           ;;
         arch)
           info "Installing: git, python, docker, docker-compose"
           $SUDO pacman -S --noconfirm git python docker docker-compose
           $SUDO systemctl enable --now docker
-          $SUDO usermod -aG docker "$USER" 2>/dev/null || true
+          $SUDO usermod -aG docker "${USER:-root}" 2>/dev/null || true
           ok "Packages installed!"
           ;;
         macos)
