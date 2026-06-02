@@ -419,7 +419,51 @@ if [ "$BUILD_OK" = "1" ]; then
 
   # ── Start services ──
   header "Starting Services"
-  info "Running $COMPOSE_CMD up -d ..."
+
+  # Start infrastructure first (postgres, redis)
+  info "Starting database and cache ..."
+  if $COMPOSE_CMD up -d postgres redis; then
+    ok "Infrastructure started"
+  else
+    fail "Failed to start infrastructure"
+    exit 1
+  fi
+
+  # Wait for postgres to accept connections
+  info "Waiting for postgres to be ready ..."
+  for i in 1 2 3 4 5 6 7 8 9 10; do
+    if $COMPOSE_CMD exec -T postgres pg_isready -U "${POSTGRES_USER:-ocpp}" &>/dev/null; then
+      ok "Postgres ready"
+      break
+    fi
+    if [ "$i" = "10" ]; then
+      fail "Postgres did not become ready in time"
+      exit 1
+    fi
+    sleep 3
+  done
+
+  # Apply database schema
+  if [ -f "opencpo-core/db/schema.sql" ]; then
+    info "Applying database schema ..."
+    if $COMPOSE_CMD exec -T postgres psql -U "${POSTGRES_USER:-ocpp}" -d "${POSTGRES_DB:-ocpp}" < "opencpo-core/db/schema.sql" 2>/dev/null; then
+      ok "Database schema applied"
+    else
+      warn "Schema may already be applied, continuing ..."
+    fi
+  fi
+
+  # Apply migrations
+  for migration in opencpo-core/db/migrations/*.sql; do
+    if [ -f "$migration" ]; then
+      migration_name=$(basename "$migration")
+      info "Applying migration: $migration_name ..."
+      $COMPOSE_CMD exec -T postgres psql -U "${POSTGRES_USER:-ocpp}" -d "${POSTGRES_DB:-ocpp}" < "$migration" 2>/dev/null || true
+    fi
+  done
+
+  # Start all services
+  info "Starting all services ..."
   if $COMPOSE_CMD up -d; then
     ok "All services started!"
   else

@@ -231,7 +231,7 @@ def gather_config():
     section("Core CSMS")
 
     config["secret_key"] = ask("Secret key (leave blank to generate)", generate_secret())
-    config["log_level"] = ask("Log level", "info")
+    config["log_level"] = ask("Log level", "INFO")
     config["ocpp16_port"] = ask("OCPP 1.6 WebSocket port", "9100")
     config["ocpp201_port"] = ask("OCPP 2.0.1 WebSocket port", "9201")
     config["api_port"] = ask("REST API port", "8000")
@@ -392,7 +392,7 @@ def _defaults():
         "db_port": "5432",
         "redis_port": "6379",
         "secret_key": generate_secret(),
-        "log_level": "info",
+        "log_level": "INFO",
         "ocpp16_port": "9100",
         "ocpp201_port": "9201",
         "api_port": "8000",
