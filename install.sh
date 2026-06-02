@@ -197,7 +197,15 @@ EXTRACT_DIR="${TMPDIR}/extract"
 mkdir -p "$EXTRACT_DIR"
 tar -xzf "$ARCHIVE" -C "$EXTRACT_DIR"
 
-SRC_DIR=$(find "$EXTRACT_DIR" -maxdepth 1 -type d | tail -1)
+# Find the extracted repo root — GitHub archives create a single top-level dir
+# named <org>-<repo>-<sha>. Validate by looking for known files inside.
+SRC_DIR=""
+for candidate in "$EXTRACT_DIR"/*/; do
+  if [ -f "${candidate}install.sh" ] || [ -f "${candidate}setup.sh" ] || [ -f "${candidate}docker-compose.yml" ]; then
+    SRC_DIR="${candidate%/}"
+    break
+  fi
+done
 
 if [ -z "$SRC_DIR" ] || [ ! -d "$SRC_DIR" ]; then
   fail "Extraction failed"

@@ -181,7 +181,7 @@ def check_docker():
 def generate_secret(length=48):
     """Generate a cryptographically random secret."""
     # Avoid $ and # — $ triggers docker-compose interpolation, # starts .env comment
-    alphabet = string.ascii_letters + string.digits + "!@%^*"
+    alphabet = string.ascii_letters + string.digits + "!@^*"
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
 

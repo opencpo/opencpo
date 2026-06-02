@@ -23,6 +23,7 @@ cleanup() {
     warn "  • Docker daemon not running?  sudo systemctl start docker"
     warn "  • Port conflict?              sudo lsof -i :8080"
     warn "  • Missing deps?              ./setup.sh --skip-deps"
+    warn "  • Service crash?             docker compose logs --tail=50"
     warn "  • Full reinstall:            ./uninstall.sh && curl ... | bash"
     echo ""
   fi
@@ -166,7 +167,7 @@ if [ "$SKIP_DEPS" = "0" ]; then
   PYTHON=""
   for cmd in python3 python; do
     if command -v "$cmd" &>/dev/null; then
-      VER=$("$cmd" --version 2>&1 | grep -oP '\d+\.\d+' | head -1)
+      VER=$("$cmd" --version 2>&1 | grep -oE '[0-9]+\.[0-9]+' | head -1)
       MAJOR="${VER%%.*}"
       if [ "$MAJOR" -ge 3 ] 2>/dev/null; then
         PYTHON="$cmd"
@@ -184,14 +185,11 @@ if [ "$SKIP_DEPS" = "0" ]; then
   fi
 
   # ── Docker ──
-  DOCKER_OK=0
   if command -v docker &>/dev/null; then
     if docker info &>/dev/null 2>&1; then
       ok "Docker: $(docker --version 2>&1)"
-      DOCKER_OK=1
     elif sudo docker info &>/dev/null 2>&1; then
       ok "Docker: $(sudo docker --version 2>&1) (via sudo)"
-      DOCKER_OK=1
     else
       # Docker binary exists but daemon not running — try to start it
       warn "Docker daemon not running — attempting to start..."
@@ -199,7 +197,6 @@ if [ "$SKIP_DEPS" = "0" ]; then
       sleep 2
       if docker info &>/dev/null 2>&1 || sudo docker info &>/dev/null 2>&1; then
         ok "Docker daemon started"
-        DOCKER_OK=1
       else
         warn "Docker installed but daemon not running (or no socket access)"
         warn "  Try: sudo systemctl start docker"
@@ -344,16 +341,16 @@ if [ "$SKIP_DEPS" = "0" ]; then
       echo ""
     fi
   fi
-  # Detect compose command (may need sudo if docker group not yet active)
-  if command -v docker-compose &>/dev/null; then
-    COMPOSE_CMD="docker-compose"
-  elif docker compose version &>/dev/null 2>&1; then
-    COMPOSE_CMD="docker compose"
-  elif sudo docker compose version &>/dev/null 2>&1; then
-    COMPOSE_CMD="sudo docker compose"
-  else
-    COMPOSE_CMD="docker compose"
-  fi
+fi
+
+# Detect compose command (may need sudo if docker group not yet active)
+COMPOSE_CMD="docker compose"
+if command -v docker-compose &>/dev/null; then
+  COMPOSE_CMD="docker-compose"
+elif docker compose version &>/dev/null 2>&1; then
+  COMPOSE_CMD="docker compose"
+elif sudo docker compose version &>/dev/null 2>&1; then
+  COMPOSE_CMD="sudo docker compose"
 fi
 
 # ── Clone Components ───────────────────────────────────────────────────────
@@ -366,13 +363,6 @@ COMPONENTS=(
   opencpo-tester
   opencpo-charger-farm
 )
-
-# Remove stale docker volumes if .env was regenerated (passwords changed)
-if [ -f .env.bak ]; then
-  info "New .env detected — removing stale docker volumes ..."
-  $COMPOSE_CMD down -v 2>/dev/null || true
-  ok "Stale volumes removed"
-fi
 
 for repo in "${COMPONENTS[@]}"; do
   if [ -d "$repo/.git" ]; then
@@ -406,6 +396,13 @@ if [ -n "$PYTHON" ] || PYTHON=$(command -v python3 || command -v python); then
 else
   warn "Python 3 not found. Configure manually:"
   warn "  Edit .env with your settings, then run: docker compose build && docker compose up -d"
+fi
+
+# Remove stale docker volumes if .env was regenerated (passwords changed)
+if [ -f .env.bak ]; then
+  info "New .env detected — removing stale docker volumes ..."
+  $COMPOSE_CMD down -v 2>/dev/null || true
+  ok "Stale volumes removed"
 fi
 
 echo ""
@@ -453,25 +450,31 @@ if [ "$BUILD_OK" = "1" ]; then
 
   # Wait for postgres to accept connections
   info "Waiting for postgres to be ready ..."
-  for i in 1 2 3 4 5 6 7 8 9 10; do
+  for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
     if $COMPOSE_CMD exec -T postgres pg_isready -U "${POSTGRES_USER:-ocpp}" &>/dev/null; then
       ok "Postgres ready"
       break
     fi
-    if [ "$i" = "10" ]; then
+    if [ "$i" = "15" ]; then
       fail "Postgres did not become ready in time"
       exit 1
     fi
     sleep 3
   done
 
-  # Apply database schema
+  # Apply database schema (idempotent — checks if tables exist first)
   if [ -f "opencpo-core/db/schema.sql" ]; then
-    info "Applying database schema ..."
-    if $COMPOSE_CMD exec -T postgres psql -U "${POSTGRES_USER:-ocpp}" -d "${POSTGRES_DB:-ocpp}" < "opencpo-core/db/schema.sql" 2>/dev/null; then
-      ok "Database schema applied"
+    TABLE_COUNT=$($COMPOSE_CMD exec -T postgres psql -U "${POSTGRES_USER:-ocpp}" -d "${POSTGRES_DB:-ocpp}" -t -A -c "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'" 2>/dev/null || echo "0")
+    if [ "$TABLE_COUNT" = "0" ]; then
+      info "Applying database schema ..."
+      if $COMPOSE_CMD exec -T postgres psql -U "${POSTGRES_USER:-ocpp}" -d "${POSTGRES_DB:-ocpp}" < "opencpo-core/db/schema.sql" 2>/dev/null; then
+        ok "Database schema applied"
+      else
+        fail "Failed to apply database schema"
+        exit 1
+      fi
     else
-      warn "Schema may already be applied, continuing ..."
+      ok "Database schema already present ($TABLE_COUNT tables)"
     fi
   fi
 
@@ -492,18 +495,23 @@ if [ "$BUILD_OK" = "1" ]; then
     # Poll up to 90s for all services to become healthy
     info "Waiting for services to pass health checks ..."
     for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
-      UNHEALTHY=$($COMPOSE_CMD ps --format '{{.Status}}' 2>/dev/null | grep -c "unhealthy" || true)
+      UNHEALTHY=$($COMPOSE_CMD ps --format '{{.Status}}' 2>/dev/null | grep -cE "unhealthy|exited" || true)
       if [ "$UNHEALTHY" = "0" ]; then
         ok "All services healthy!"
         break
       fi
       if [ "$i" = "15" ]; then
-        warn "Some services still starting — you can check with: docker compose ps"
+        echo ""
+        warn "Some services not healthy after 90s — check:"
+        warn "  docker compose ps"
+        warn "  docker compose logs <service>"
         $COMPOSE_CMD ps --format 'table {{.Name}}\t{{.Status}}'
         break
       fi
+      printf '.'
       sleep 6
     done
+    echo ""
   else
     fail "Failed to start services. Check the output above."
     exit 1
