@@ -19,19 +19,23 @@ Everything you need to run a Charge Point Operator — from protocol to driver a
 
 ## Quick Start
 
+The **one-liner** installs everything — no git, Python, or Docker needed:
+
 ```bash
-# 1. Clone this repo
-git clone https://github.com/opencpo/opencpo
-cd opencpo
+curl -fsSL https://raw.githubusercontent.com/opencpo/opencpo/main/install.sh | bash
+```
 
-# 2. Clone the component repos
-./setup.sh
+This will:
+- Detect your OS (Ubuntu, Fedora, Arch, macOS)
+- Install **Python 3** if missing
+- Install **Docker + Compose** via the official script
+- Clone all 5 component repos
+- Run the configuration wizard
+- Build all Docker images
 
-# 3. Configure (optional — defaults work out of the box)
-cp .env.example .env
+> **Already have git?** Same result: `git clone https://github.com/opencpo/opencpo.git && cd opencpo && ./setup.sh`
 
-# 4. Start everything
-docker compose up
+When done, open **http://localhost:8080** — your CPO admin panel is ready.
 ```
 
 Open **http://localhost:8080** — your CPO admin panel is ready.
