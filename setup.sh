@@ -379,17 +379,32 @@ echo ""
 # ── Build ──────────────────────────────────────────────────────────────────
 header "Building Docker Images"
 
-if [ "${ALL_OK:-1}" = "1" ] || [ "$SKIP_DEPS" = "1" ]; then
-  info "Running $COMPOSE_CMD build ..."
-  if $COMPOSE_CMD build; then
-    ok "All images built successfully!"
-  else
-    fail "Build failed. Check the output above for errors."
-    exit 1
+BUILD_OK=0
+COMPOSE_TRIES=("$COMPOSE_CMD")
+if [ "$COMPOSE_CMD" != "sudo docker compose" ]; then
+  COMPOSE_TRIES+=("sudo $COMPOSE_CMD")
+fi
+
+for cmd in "${COMPOSE_TRIES[@]}"; do
+  info "Running $cmd build ..."
+  if $cmd build; then
+    BUILD_OK=1
+    COMPOSE_CMD="$cmd"
+    break
   fi
+  echo ""
+done
+
+if [ "$BUILD_OK" = "1" ]; then
+  ok "All images built successfully!"
 else
-  warn "Skipping build due to missing dependencies. Fix them first then run:"
-  echo "  $COMPOSE_CMD build"
+  fail "Docker build failed. The Docker daemon may need to be started, or"
+  fail "you may need to add your user to the docker group:"
+  echo ""
+  echo "    sudo usermod -aG docker \$USER && newgrp docker"
+  echo "    cd $(pwd) && $COMPOSE_CMD build"
+  echo ""
+  exit 1
 fi
 
 # ── Done ────────────────────────────────────────────────────────────────────
