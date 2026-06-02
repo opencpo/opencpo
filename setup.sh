@@ -174,10 +174,22 @@ if [ "$SKIP_DEPS" = "0" ]; then
     if docker info &>/dev/null 2>&1; then
       ok "Docker: $(docker --version 2>&1)"
       DOCKER_OK=1
+    elif sudo docker info &>/dev/null 2>&1; then
+      ok "Docker: $(sudo docker --version 2>&1) (via sudo)"
+      DOCKER_OK=1
     else
-      warn "Docker installed but daemon not running (or no socket access)"
-      warn "  Try: sudo usermod -aG docker \$USER && newgrp docker"
-      ALL_OK=0
+      # Docker binary exists but daemon not running — try to start it
+      warn "Docker daemon not running — attempting to start..."
+      sudo systemctl start docker 2>/dev/null || sudo service docker start 2>/dev/null || true
+      sleep 2
+      if docker info &>/dev/null 2>&1 || sudo docker info &>/dev/null 2>&1; then
+        ok "Docker daemon started"
+        DOCKER_OK=1
+      else
+        warn "Docker installed but daemon not running (or no socket access)"
+        warn "  Try: sudo systemctl start docker"
+        ALL_OK=0
+      fi
     fi
   else
     fail "Docker is required"
@@ -386,6 +398,12 @@ if [ "$COMPOSE_CMD" != "sudo docker compose" ]; then
 fi
 
 for cmd in "${COMPOSE_TRIES[@]}"; do
+  # If docker daemon isn't reachable, try starting it
+  if ! docker info &>/dev/null 2>&1 && ! sudo docker info &>/dev/null 2>&1; then
+    info "Docker daemon not reachable — attempting to start..."
+    sudo systemctl start docker 2>/dev/null || sudo service docker start 2>/dev/null || true
+    sleep 2
+  fi
   info "Running $cmd build ..."
   if $cmd build; then
     BUILD_OK=1
