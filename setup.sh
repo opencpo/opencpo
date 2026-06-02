@@ -14,7 +14,7 @@
 
 set -euo pipefail
 
-VERSION="v0.2.6"
+VERSION="v0.2.10"
 
 # ── Global cleanup on exit ──
 cleanup() {
@@ -686,6 +686,9 @@ else
   echo ""
   exit 1
 fi
+
+# ── Write version file ──
+echo "$VERSION" > "$(dirname "$0")/version.txt" 2>/dev/null || true
 
 # ── Done ────────────────────────────────────────────────────────────────────
 header "${GREEN}${BOLD}OpenCPO is ready!${NC}"

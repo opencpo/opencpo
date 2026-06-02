@@ -66,6 +66,9 @@ services:
       timeout: 5s
       retries: 7
       start_period: 45s
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./:/app/opencpo
 
   # ── Operator Dashboard ────────────────────────────────────────────────────
 
