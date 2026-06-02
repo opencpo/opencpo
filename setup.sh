@@ -11,8 +11,8 @@ REPOS=(
   opencpo-core
   opencpo-admin
   opencpo-charge-app
-  opencpo-charger-farm
   opencpo-tester
+  opencpo-charger-farm
 )
 
 echo "╔══════════════════════════════════════╗"
@@ -33,7 +33,7 @@ for repo in "${REPOS[@]}"; do
 done
 
 echo ""
-echo "All components ready."
+echo "All components cloned."
 echo ""
 
 # Copy env file if not present
@@ -43,9 +43,18 @@ if [ ! -f .env ]; then
   echo ""
 fi
 
+echo "Building all Docker images with docker compose build ..."
+echo ""
+docker compose build
+echo ""
+echo "Build complete."
+echo ""
+
 echo "Next step:"
 echo ""
-echo "  docker compose up"
+
+echo "  docker compose up -d"
+
 echo ""
 echo "Then open:"
 echo "  CPO Admin:    http://localhost:8080"

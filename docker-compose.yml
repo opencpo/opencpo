@@ -33,7 +33,7 @@ services:
   # ── Core CSMS ─────────────────────────────────────────────────────────────
 
   ocpp-core:
-    build: ./ocpp-core
+    build: ./opencpo-core
     restart: unless-stopped
     depends_on:
       postgres:
@@ -68,7 +68,7 @@ services:
   # ── Operator Dashboard ────────────────────────────────────────────────────
 
   cpo-admin:
-    build: ./ocpp-cpo-admin
+    build: ./opencpo-admin
     restart: unless-stopped
     depends_on:
       ocpp-core:
@@ -78,12 +78,12 @@ services:
     environment:
       OCPP_CORE_API: http://ocpp-core:8000
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost}
-      ORG_NAME: ${ORG_NAME:-My CPO}
+      ORG_NAME: ${ORG_NAME:-OpenCPO Demo}
 
   # ── Driver PWA ────────────────────────────────────────────────────────────
 
   charge-app:
-    build: ./ocpp-charge-app
+    build: ./opencpo-charge-app
     restart: unless-stopped
     depends_on:
       ocpp-core:
@@ -97,7 +97,7 @@ services:
   # ── Compliance Tester ─────────────────────────────────────────────────────
 
   compliance-tester:
-    build: ./ocpp-compliance-tester/web
+    build: ./opencpo-tester
     restart: unless-stopped
     ports:
       - "${COMPLIANCE_PORT:-8090}:8090"
@@ -107,7 +107,7 @@ services:
   # ── Virtual Charger Farm ──────────────────────────────────────────────────
 
   charger-farm:
-    build: ./ocpp-charger-farm
+    build: ./opencpo-charger-farm
     restart: unless-stopped
     depends_on:
       ocpp-core:
