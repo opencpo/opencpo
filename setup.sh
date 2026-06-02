@@ -108,7 +108,10 @@ confirm() {
 }
 
 # ── Banner ─────────────────────────────────────────────────────────────────
-banner
+# Skip banner in auto-mode (install.sh already showed it)
+if [ "${AUTO:-0}" != "1" ]; then
+  banner
+fi
 
 # ── Detect OS ──────────────────────────────────────────────────────────────
 header "System"
@@ -424,7 +427,7 @@ for cmd in "${COMPOSE_TRIES[@]}"; do
     sleep 2
   fi
   info "Running $cmd build ..."
-  if $cmd build; then
+  if $cmd build -q; then
     BUILD_OK=1
     COMPOSE_CMD="$cmd"
     break

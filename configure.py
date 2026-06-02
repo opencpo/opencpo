@@ -411,7 +411,8 @@ def _defaults():
 def main():
     auto_mode = "--auto" in sys.argv
 
-    print(BANNER)
+    if not auto_mode:
+        print(BANNER)
 
     if auto_mode:
         config = _defaults()

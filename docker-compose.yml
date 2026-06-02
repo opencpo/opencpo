@@ -48,22 +48,22 @@ services:
       # Database
       PG_HOST: postgres
       PG_PORT: 5432
-      PG_DB: ${POSTGRES_DB:-ocpp}
+      PG_NAME: ${POSTGRES_DB:-ocpp}
       PG_USER: ${POSTGRES_USER:-ocpp}
       PG_PASSWORD: ${POSTGRES_PASSWORD:-ocpp}
       # Redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
       # App
-      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost}
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8000/health || exit 1"]
       interval: 15s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 10
+      start_period: 60s
 
   # ── Operator Dashboard ────────────────────────────────────────────────────
 
