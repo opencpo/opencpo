@@ -17,7 +17,7 @@ set -euo pipefail
 
 REPO="opencpo/opencpo"
 BRANCH="main"
-VERSION="v0.4.2"
+VERSION="v0.4.3"
 # Fetch the current HEAD SHA to bypass GitHub CDN cache on archive download
 INSTALLER_SHA=$(curl -fsSL "https://api.github.com/repos/${REPO}/git/refs/heads/${BRANCH}" 2>/dev/null | grep -o '"sha": "[a-f0-9]*"' | head -1 | cut -d'"' -f4 || echo "")
 if [ -n "$INSTALLER_SHA" ]; then
