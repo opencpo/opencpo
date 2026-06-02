@@ -126,8 +126,8 @@ services:
     ports:
       - "${CHARGER_FARM_PORT:-8087}:8087"
     environment:
-      OCPP_WS_URL: ws://ocpp-core:9100
-      OCPP_201_WS_URL: ws://ocpp-core:9201
+      OCPP16_URL: ws://ocpp-core:9100
+      OCPP201_URL: ws://ocpp-core:9201
       FARM_UI_PORT: 8087
 
 volumes:
