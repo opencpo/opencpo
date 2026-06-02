@@ -79,6 +79,12 @@ services:
       OCPP_CORE_API: http://ocpp-core:8000
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost}
       ORG_NAME: ${ORG_NAME:-OpenCPO Demo}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   # ── Driver PWA ────────────────────────────────────────────────────────────
 

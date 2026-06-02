@@ -14,7 +14,7 @@
 
 set -euo pipefail
 
-VERSION="v0.1.12"
+VERSION="v0.2.3"
 
 # ── Global cleanup on exit ──
 cleanup() {
@@ -439,6 +439,26 @@ if [ "$COMPOSE_CMD" != "sudo docker compose" ]; then
   COMPOSE_TRIES+=("sudo $COMPOSE_CMD")
 fi
 
+# Build only services whose source directories actually exist.
+# This makes charge-app, tester, and charger-farm optional — they won't
+# block the install if the user hasn't cloned those repos yet.
+BUILD_SERVICES="postgres redis ocpp-core cpo-admin"
+for svc in charge-app compliance-tester charger-farm; do
+  REPODIR=""
+  case "$svc" in
+    charge-app)          REPODIR="opencpo-charge-app" ;;
+    compliance-tester)   REPODIR="opencpo-tester" ;;
+    charger-farm)        REPODIR="opencpo-charger-farm" ;;
+  esac
+  if [ -d "$REPODIR" ] && [ -f "$REPODIR/Dockerfile" ]; then
+    BUILD_SERVICES="$BUILD_SERVICES $svc"
+  else
+    warn "Skipping $svc — $REPODIR/Dockerfile not found"
+  fi
+done
+
+BUILD_LOG=$(mktemp)
+
 for cmd in "${COMPOSE_TRIES[@]}"; do
   # If docker daemon isn't reachable, try starting it
   if ! docker info &>/dev/null 2>&1 && ! sudo docker info &>/dev/null 2>&1; then
@@ -446,17 +466,23 @@ for cmd in "${COMPOSE_TRIES[@]}"; do
     sudo systemctl start docker 2>/dev/null || sudo service docker start 2>/dev/null || true
     sleep 2
   fi
-  info "Building images (this may take a few minutes) ..."
-  # Use --progress=plain to expose pip install errors hidden by -q.
-  # tail preserves the last 20 lines of the build output for context.
-  if $cmd build --progress=plain 2>&1 | tail -20; then
+  info "Building images ($BUILD_SERVICES) ..."
+  # Capture full build output to a temp file so we can show it on failure.
+  # --progress=plain exposes pip install errors that -q would hide.
+  if $cmd build --progress=plain $BUILD_SERVICES >"$BUILD_LOG" 2>&1; then
+    # Success: show last 10 lines as a preview
+    tail -10 "$BUILD_LOG"
     BUILD_OK=1
     COMPOSE_CMD="$cmd"
+    rm -f "$BUILD_LOG"
     break
   fi
-  # If build failed, show the full error from docker's output
+  # Build failed — show full output so the user can see the error
   echo ""
-  echo "  Build failed. Docker build output above."
+  fail "Build failed. Full build output:"
+  echo "══════════════════════════════════════════════════════════════════"
+  cat "$BUILD_LOG"
+  echo "══════════════════════════════════════════════════════════════════"
   echo ""
 done
 
@@ -482,17 +508,24 @@ print('OK')
     warn "Import check failed — the core image has a broken dependency chain."
     warn "This is usually caused by a missing pip dependency or stale build cache."
     echo ""
-    info "Retrying with --no-cache to force a clean install..."
-    if $COMPOSE_CMD build --no-cache --progress=plain ocpp-core 2>&1 | tail -20; then
+    info "Retrying with --no-cache to force a clean rebuild..."
+    REBUILD_LOG=$(mktemp)
+    if $COMPOSE_CMD build --no-cache --progress=plain ocpp-core cpo-admin >"$REBUILD_LOG" 2>&1; then
+      tail -10 "$REBUILD_LOG"
       ok "Rebuild successful"
+      rm -f "$REBUILD_LOG"
       SANITY_OK=1
     else
-      fail "Build still fails after --no-cache. Check the error above."
+      fail "Build still fails after --no-cache. Full output:"
+      echo "══════════════════════════════════════════════════════════════════"
+      cat "$REBUILD_LOG"
+      echo "══════════════════════════════════════════════════════════════════"
       echo ""
       warn "Common causes:"
       warn "  • Missing Python package  →  add to opencpo-core/requirements.txt"
       warn "  • Syntax error in code    →  fix the file and re-run"
       echo ""
+      rm -f "$REBUILD_LOG"
       exit 1
     fi
   fi
@@ -636,7 +669,7 @@ echo -e "  ${BOLD}Start the platform:${NC}"
 echo "    $COMPOSE_CMD up -d"
 echo ""
 echo -e "  ${BOLD}Open in your browser:${NC}"
-echo "    Admin Panel:  http://localhost:8080  (login: admin / cpoadmin)"
+echo "    Admin Panel:  http://localhost:8080  (create your admin account on first visit)"
 echo "    Charge App:   http://localhost:8003"
 echo "    Compliance:   http://localhost:8090"
 echo "    Charger Farm: http://localhost:8087"
