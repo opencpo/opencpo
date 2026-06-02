@@ -14,7 +14,7 @@
 
 set -euo pipefail
 
-VERSION="v0.1.9"
+VERSION="v0.1.10"
 
 # ── Global cleanup on exit ──
 cleanup() {
@@ -536,7 +536,14 @@ if [ "$BUILD_OK" = "1" ]; then
     done
     echo ""
   else
-    fail "Failed to start services. Check the output above."
+    fail "Failed to start services."
+    echo ""
+    warn "--- ocpp-core logs (last 20 lines) ---"
+    $COMPOSE_CMD logs --tail=20 ocpp-core 2>/dev/null || true
+    echo ""
+    warn "--- all services status ---"
+    $COMPOSE_CMD ps --format 'table {{.Name}}\t{{.Status}}' 2>/dev/null || true
+    echo ""
     exit 1
   fi
 else
