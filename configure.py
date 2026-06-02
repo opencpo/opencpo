@@ -207,7 +207,7 @@ def gather_config():
 
     section("Organization")
 
-    config["org_name"] = ask("Organization name", "OpenCPO Demo")
+    config["org_name"] = ask("Organization name", "My CPO")
     config["public_url"] = ask("Public URL (for QR codes, links)", "http://localhost")
 
     section("PostgreSQL Database")
@@ -382,7 +382,7 @@ def build_and_start():
 def _defaults():
     """Return default config for --auto mode."""
     return {
-        "org_name": "OpenCPO Demo",
+        "org_name": "My CPO",
         "public_url": "http://localhost",
         "db_name": "ocpp",
         "db_user": "ocpp",

@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-ocpp}
       POSTGRES_USER: ${POSTGRES_USER:-ocpp}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ocpp}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-CHANGE_ME_IN_PROD}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
@@ -50,15 +50,15 @@ services:
       PG_PORT: 5432
       PG_NAME: ${POSTGRES_DB:-ocpp}
       PG_USER: ${POSTGRES_USER:-ocpp}
-      PG_PASSWORD: ${POSTGRES_PASSWORD:-ocpp}
+      PG_PASSWORD: ${PG_PASSWORD:-CHANGE_ME_IN_PROD}
       # Redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
       # App
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
-      MANAGEMENT_API_KEY: ${MANAGEMENT_API_KEY:-opencpo-mgmt-key-change-in-production}
-      API_KEY: ${MANAGEMENT_API_KEY:-opencpo-mgmt-key-change-in-production}
+      MANAGEMENT_API_KEY: ${MANAGEMENT_API_KEY:-CHANGE_ME_IN_PROD}
+      API_KEY: ${MANAGEMENT_API_KEY:-CHANGE_ME_IN_PROD}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost}
       # Backup / update paths
       UPDATE_SCRIPT: /app/opencpo/update.sh
@@ -88,10 +88,10 @@ services:
       - "${CPO_ADMIN_PORT:-8080}:8080"
     environment:
       OCPP_CORE_API: http://ocpp-core:8000
-      CORE_API_KEY: ${MANAGEMENT_API_KEY:-opencpo-mgmt-key-change-in-production}
-      JWT_SECRET: ${MANAGEMENT_API_KEY:-opencpo-mgmt-key-change-in-production}
+      CORE_API_KEY: ${MANAGEMENT_API_KEY:-CHANGE_ME_IN_PROD}
+      JWT_SECRET: ${MANAGEMENT_API_KEY:-CHANGE_ME_IN_PROD}
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost}
-      ORG_NAME: ${ORG_NAME:-OpenCPO Demo}
+      ORG_NAME: ${ORG_NAME:-My CPO}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
