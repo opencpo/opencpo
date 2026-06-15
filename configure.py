@@ -22,29 +22,63 @@ import string
 
 # ── ANSI Colors ─────────────────────────────────────────────────────────────
 
-RESET = "\033[0m"
-BOLD = "\033[1m"
-DIM = "\033[2m"
-CYAN = "\033[96m"
-GREEN = "\033[92m"
-YELLOW = "\033[93m"
-RED = "\033[91m"
-BLUE = "\033[94m"
-MAGENTA = "\033[95m"
-WHITE = "\033[97m"
-BG_DARK = "\033[40m"
-BG_BLUE = "\033[44m"
+def _supports_color():
+    if os.environ.get("NO_COLOR"):
+        return False
+    if not hasattr(sys.stdout, "isatty") or not sys.stdout.isatty():
+        return False
+    return True
+
+_COLOR = _supports_color()
+
+RESET   = "\033[0m"  if _COLOR else ""
+BOLD    = "\033[1m"  if _COLOR else ""
+DIM     = "\033[2m"  if _COLOR else ""
+CYAN    = "\033[96m" if _COLOR else ""
+GREEN   = "\033[92m" if _COLOR else ""
+YELLOW  = "\033[93m" if _COLOR else ""
+RED     = "\033[91m" if _COLOR else ""
+BLUE    = "\033[94m" if _COLOR else ""
+MAGENTA = "\033[95m" if _COLOR else ""
+WHITE   = "\033[97m" if _COLOR else ""
+BG_DARK = "\033[40m" if _COLOR else ""
+BG_BLUE = "\033[44m" if _COLOR else ""
 
 # ── Banner ─────────────────────────────────────────────────────────────────
 
+def _supports_truecolor():
+    ct = os.environ.get("COLORTERM", "")
+    return ct in ("truecolor", "24bit")
+
+if _COLOR and _supports_truecolor():
+    # 24-bit RGB gradient — looks great on modern terminals
+    GRADIENT_COLORS = [
+        "\033[38;2;0;229;255m",   # bright cyan
+        "\033[38;2;0;184;212m",   # cyan
+        "\033[38;2;0;150;136m",   # teal
+        "\033[38;2;56;142;60m",    # green
+        "\033[38;2;27;94;32m",     # dark green
+        "\033[38;2;13;60;20m",     # very dark green
+    ]
+elif _COLOR:
+    # Standard ANSI fallback — works on every terminal (macOS Terminal.app, etc.)
+    # 3 lines cyan, 3 lines green for a clean gradient effect
+    GRADIENT_COLORS = [
+        CYAN, CYAN, CYAN,
+        GREEN, GREEN, GREEN,
+    ]
+else:
+    # No color output — piped installs, CI, etc.
+    GRADIENT_COLORS = [""] * 6
+
 BANNER = (
     "\n" + BOLD + "\n"
-    + "   \033[38;2;0;229;255m" + "   ██████╗ ██████╗ ███████╗███╗   ██╗ ██████╗██████╗  ██████╗ " + RESET + "\n"
-    + "   \033[38;2;0;184;212m" + "  ██╔═══██╗██╔══██╗██╔════╝████╗  ██║██╔════╝██╔══██╗██╔═══██╗" + RESET + "\n"
-    + "   \033[38;2;0;150;136m" + "  ██║   ██║██████╔╝█████╗  ██╔██╗ ██║██║     ██████╔╝██║   ██║" + RESET + "\n"
-    + "   \033[38;2;56;142;60m" + "  ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██║     ██╔═══╝ ██║   ██║" + RESET + "\n"
-    + "   \033[38;2;27;94;32m" + "  ╚██████╔╝██║     ███████╗██║ ╚████║╚██████╗██║     ╚██████╔╝" + RESET + "\n"
-    + "   \033[38;2;13;60;20m" + "   ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚═╝      ╚═════╝ " + RESET + "\n"
+    + "   " + GRADIENT_COLORS[0] + "   ██████╗ ██████╗ ███████╗███╗   ██╗ ██████╗██████╗  ██████╗ " + RESET + "\n"
+    + "   " + GRADIENT_COLORS[1] + "  ██╔═══██╗██╔══██╗██╔════╝████╗  ██║██╔════╝██╔══██╗██╔═══██╗" + RESET + "\n"
+    + "   " + GRADIENT_COLORS[2] + "  ██║   ██║██████╔╝█████╗  ██╔██╗ ██║██║     ██████╔╝██║   ██║" + RESET + "\n"
+    + "   " + GRADIENT_COLORS[3] + "  ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██║     ██╔═══╝ ██║   ██║" + RESET + "\n"
+    + "   " + GRADIENT_COLORS[4] + "  ╚██████╔╝██║     ███████╗██║ ╚████║╚██████╗██║     ╚██████╔╝" + RESET + "\n"
+    + "   " + GRADIENT_COLORS[5] + "   ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚═╝      ╚═════╝ " + RESET + "\n"
     + DIM + "  Open Source EV Charging Platform · Zero Trust · OCPP 1.6/2.0.1 · ISO 15118 · PKI" + RESET + "\n"
     + DIM + "  v0.2.6" + RESET + "\n"
     + "\n"
